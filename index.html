@@ -260,6 +260,24 @@ html,body{margin:0;height:100%;overflow:hidden;background:#05080f;font-family:'M
 .sbtn:hover{filter:brightness(1.25);box-shadow:0 0 12px rgba(255,220,130,.35)}
 #shopBtns{background:linear-gradient(#08111e,#050a12);border-top:2px solid #5a4a28;border-radius:0 0 6px 6px}
 #shopBtns #recBuyBtn{background:linear-gradient(#4a6a22,#24380f);border-color:#e0c880;text-shadow:0 0 8px rgba(200,255,150,.5)}
+#shopInv{display:flex;gap:5px;justify-content:center;margin:2px 0 6px}
+#shopInv .sv{width:34px;height:34px;border:1px solid #6a5a34;border-radius:5px;background:radial-gradient(circle at 30% 25%,#1a2c48,#0a121c);display:flex;align-items:center;justify-content:center;cursor:pointer}
+#shopInv .sv.full{border-color:#c8aa6e;box-shadow:0 0 8px rgba(255,220,130,.25)}
+#shopInv .sv .svgi{width:24px;height:24px}
+#shopTabs{display:flex;gap:6px;margin:0 0 6px}
+.stab{flex:1;text-align:center;padding:5px 0;border:1px solid #5a4a28;border-radius:5px;background:linear-gradient(#14233a,#0a121c);color:#cdbf9a;font-size:12px;font-weight:700;cursor:pointer;transition:.12s}
+.stab.on{border-color:#ffe7a3;color:#fff;background:linear-gradient(#2b4a7a,#14284a);box-shadow:0 0 10px rgba(110,170,255,.4)}
+.si.up{border-color:#9a7b3a;background:linear-gradient(145deg,#1d2f4c,#0a121c 70%)}
+.si.ok{box-shadow:inset 0 0 0 1px rgba(120,230,150,.35),0 2px 4px rgba(0,0,0,.5)}
+.si.no.up{opacity:.5}
+.si .sr{display:block;color:#8fb4e8;font-size:10px;margin-top:1px}
+#shop.scr{max-height:calc(100vh - 12px);max-height:calc(100dvh - 12px);flex-direction:column;overflow:hidden}
+#shop.scr #shopList{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y}
+#shop.scr #shopList{grid-auto-rows:max-content;align-content:start}
+#shop.scr #shopNote{display:none}
+#shop.scr #shopBtns{margin:8px -10px -10px}
+@media (max-height:520px){#shopInv{display:none}#shopHead{padding-bottom:4px;margin-bottom:4px;font-size:15px}#shopTabs{margin-bottom:4px}.stab{padding:3px 0}#shop.scr #shopBtns{flex-direction:row;padding:6px 10px;margin:6px -10px -10px}#shopBtns #undoBtn{flex:1}#shopBtns #shopRow{flex:3}#shopBtns .sbtn,#shopBtns #recBuyBtn{padding:6px 8px;font-size:14px}}
+@media (max-width:640px){#shopList{grid-template-columns:1fr 1fr}.si{min-height:58px;padding:7px 8px 7px 44px;font-size:12px}.si .sic{top:12px}#shopBtns .sbtn{padding:12px 8px}#shopHead{font-size:16px}.stab{padding:8px 0}#shopInv .sv{width:38px;height:38px}}
 </style>
 </head>
 <body>
@@ -277,7 +295,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#05080f;font-family:'M
 <div id="tip"></div>
 <div id="fps">FPS</div>
 <div id="tl"><div id="kf"></div><div id="info" class="panel"></div></div>
-<div id="shop" class="panel"><div id="shopHead"><span>상점</span><span id="shopGold"></span><span id="shopX">✕</span></div><div id="shopList"></div><div id="shopNote">기지(아군 넥서스 근처)나 사망 중에만 구매·판매 가능 · 인벤토리 아이템 우클릭: 70% 환급</div><div id="shopBtns"><div class="sbtn" id="undoBtn">↩ 되돌리기</div><div id="shopRow"><div class="sbtn" id="recBuyBtn">⭐ 추천 구매</div><div class="sbtn" id="shopClose">닫기</div></div></div></div>
+<div id="shop" class="panel"><div id="shopHead"><span>상점</span><span id="shopGold"></span><span id="shopX">✕</span></div><div id="shopInv"></div><div id="shopTabs"><span class="stab on" data-f="0">전체</span><span class="stab" data-f="1">기본</span><span class="stab" data-f="2">완성</span><span class="stab" data-f="3">구매 가능</span></div><div id="shopList"></div><div id="shopNote">기지(아군 넥서스 근처)나 사망 중에만 구매·판매 가능 · 인벤토리 아이템 우클릭: 70% 환급</div><div id="shopBtns"><div class="sbtn" id="undoBtn">↩ 되돌리기</div><div id="shopRow"><div class="sbtn" id="recBuyBtn">⭐ 추천 구매</div><div class="sbtn" id="shopClose">닫기</div></div></div></div>
 <div id="tWarn"></div>
 <div id="dead"></div>
 <canvas id="minimap" width="260" height="82"></canvas>
@@ -327,8 +345,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#05080f;font-family:'M
   <div class="optrow"><span class="optl">스펠 F</span><div id="spF" class="opts"></div></div>
   <div class="pick">챔피언을 선택하세요</div>
   <div class="cards">
-    <div class="card" data-k="azir"><div class="cic">🏜️</div><h2>사하르</h2><div class="crole">모래 군주</div></div>
-    <div class="card" data-k="yasuo"><div class="cic">⚔️</div><h2>카제</h2><div class="crole">바람 검객</div></div>
+    <div class="card" data-k="azir"><div class="cic">🏜️</div><h2>아지르</h2><div class="crole">모래 군주</div></div>
+    <div class="card" data-k="yasuo"><div class="cic">⚔️</div><h2>야스오</h2><div class="crole">바람 검객</div></div>
   </div>
 </div>
 <div id="end">
@@ -1302,7 +1320,7 @@ function floater(u, v, t) {
 
 const DEFS = {
   yasuo: {
-    name: '카제', icon: '⚔️', hp: 590, hpg: 110, mp: 100, mpg: 0, mana: false,
+    name: '야스오', icon: '⚔️', hp: 590, hpg: 110, mp: 100, mpg: 0, mana: false,
     ad: 60, adg: 2.5, ap: 15, apg: 3, armor: 32, arg: 4.6, mr: 32, mrg: 2.05,
     speed: 3.45, as: 0.67, asg: 0.035, range: 1.75, windup: 0.22, regen: 1.3, regg: 0.18, mpr: 0, mprg: 0,
     skills: [
@@ -1313,7 +1331,7 @@ const DEFS = {
     ]
   },
   azir: {
-    name: '사하르', icon: '🏜️', hp: 575, hpg: 108, mp: 320, mpg: 50, mana: true,
+    name: '아지르', icon: '🏜️', hp: 575, hpg: 108, mp: 320, mpg: 50, mana: true,
     ad: 56, adg: 3.5, ap: 40, apg: 9, armor: 25, arg: 5, mr: 30, mrg: 1.3,
     speed: 3.3, as: 0.625, asg: 0.05, range: 5.25, windup: 0.2, regen: 1.4, regg: 0.15, mpr: 1.6, mprg: 0.16,
     skills: [
@@ -1560,7 +1578,7 @@ function newUnit(kind, team, x, z, mesh) {
     dashT: 0, dvx: 0, dvz: 0, dashKind: 0, dashSoldier: null, dtx: 0, dtz: 0, forceT: 0, fvx: 0, fvz: 0,
     speedBoostT: 0, speedBoost: 0,
     level: 1, xp: 0, kills: 0, deaths: 0, assists: 0, cs: 0, respawnT: 0, respawnMax: 1, cid: 0, dmgTs: null, bush: -1, revealT: -99, temp: false, life: 0, twin: false, dmgT: -99, spawnZ: 0, ruin: null, unlocked: false, lastHitBy: null, lastHitT: 0, recDone: [], cdr: 0, apen: 0, gw: false, cutUntil: 0, sbT: 0, sbTarget: null, diving: false, aiZ: 0, aiZt: 0, ls: 0, buyLog: [], streak: 0, mkN: 0, mkT: -99, mkRep: 0, cheat: false, pCd: 0, sigil: null, sigilT: 0, hinted: false, occ: null, owner: null, ruinOf: null, buildT: 0,
-    cd: [0, 0, 0, 0], sumCd: [0, 0, 0], sp: ['heal', 'flash'], exT: 0, ghT: 0, aiEqT: 0, aiEqX: 0, aiEqZ: 0, igT: 0, igAcc: 0, igDmg: 0, igSrc: null, buffT: 0, aiT: Math.random() * 0.2, aiState: 0,
+    cd: [0, 0, 0, 0], sumCd: [0, 0, 0], sp: ['heal', 'flash'], exT: 0, ghT: 0, aiEqT: 0, aiEqX: 0, aiEqZ: 0, aiMode: 0, aiModeT: 0, igT: 0, igAcc: 0, igDmg: 0, igSrc: null, buffT: 0, aiT: Math.random() * 0.2, aiState: 0,
     fxT: 0, nash: false, ie: false, comboR: false, dOut: 0, dOutC: 0, dIn: 0, bigQ: false, eMarkT: 0, eMarkD: 8, eMarkBy: null, eqLast: -99, comboT: null, comboEnd: 0, qStamp: 0, tStamp: 0, eStamp: 0, qStacks: 0, qStackT: 0,
     sl: [0, 0, 0, 0], skillPts: 0, gold: 0, aggroT: 0, aggroTarget: null, airH: 0, eGot: false, aggroSoft: false, aggroSol: false, hitTower: false, hitMinT: -99, hitMinTeam: -1, hitMinX: 0, hitMinZ: 0, retT: 0, mpRegen: 0, rT: 0, rFx: 0, rHitN: 0, rHit: [null, null, null, null, null, null, null, null], wCharges: 2, wRecharge: 0, eqQueued: false, eStk: 0, eStkT: 0, animT: 0, animKind: 0, animDur: 0.3, barW: 40, headY: 1.6, next: null, unlocks: null, req: 0, arcH: 0, forceTot: 1, items: null, buyIdx: 0, buyList: null,
     name: '', def: null
@@ -1686,7 +1704,7 @@ const ITEMS = [
   mkItem('철갑 조끼', '🦺', 800, 0, 0, 40, 0, 0, 0, 0, '방어력 +40', false),
   mkItem('붉은 수정', '💎', 600, 0, 0, 0, 300, 0, 0, 0, '체력 +300', false),
   mkItem('쾌속의 단검', '🌩️', 800, 0, 0, 0, 0, 0, 0.35, 0, '공격 속도 +35%', false),
-  mkItem('예리한 장갑', '🎯', 800, 0, 0, 0, 0, 0, 0, 0.25, '치명타 확률 +25% (카제는 2배)', false),
+  mkItem('예리한 장갑', '🎯', 800, 0, 0, 0, 0, 0, 0, 0.25, '치명타 확률 +25% (야스오는 2배)', false),
   Object.assign(mkItem('흡혈의 낫', '🩸', 900, 15, 0, 0, 0, 0, 0, 0, '공격력 +15 · 물리 피해 흡혈 +15%', false), { ls: 0.15 }),
   Object.assign(mkItem('푸른 망토', '🧥', 800, 0, 0, 0, 0, 0, 0, 0, '마법 저항력 +40', false), { mr: 40 }),
   Object.assign(mkItem('시간의 모래시계', '⏳', 900, 0, 20, 0, 0, 0, 0, 0, '주문력 +20 · 스킬 쿨타임 감소 15%', true), { cdr: 0.15 }),
@@ -1801,26 +1819,39 @@ function sellItem(u, slot) {
 const REC_Y = [0, 12, 5, 1, 6, 14, 3, 4, 16, 1, 6, 24];
 const REC_A = [0, 13, 2, 5, 23, 4, 2, 15, 3, 4, 16, 9];
 
+const RC_OWN = new Int8Array(ITEMS.length);
+const RC_NEED = new Int8Array(ITEMS.length);
+
+function recAdd(k) {
+  const it = ITEMS[k];
+  RC_OWN[k]++;
+  if (it.up) RC_OWN[0]++;
+  if (it.from) for (let c = 0; c < it.from.length; c++) recAdd(it.from[c]);
+}
+
+function recCount(u) {
+  RC_OWN.fill(0);
+  for (let i = 0; i < 6; i++) if (u.items[i] >= 0) recAdd(u.items[i]);
+}
+
 function recBuy(u) {
   const list = u.kind === 'yasuo' ? REC_Y : REC_A;
-  const done = u.recDone;
   curBatch = ++buyBatch;
+  RC_NEED.fill(0);
+  recCount(u);
   let n = 0;
   let poor = false;
   let full = false;
-  for (let pass = 0; pass < 2; pass++) {
-    poor = false;
-    full = false;
-    for (let i = 0; i < list.length; i++) {
-      if (done[i]) continue;
-      curRecPos = i;
-      const r = buyItem(u, list[i]);
-      curRecPos = -1;
-      if (r === 0) { done[i] = true; n++; }
-      else if (r === 2) done[i] = true;
-      else if (r === 1) poor = true;
-      else if (r === 3) full = true;
-    }
+  for (let i = 0; i < list.length; i++) {
+    const k = list[i];
+    RC_NEED[k]++;
+    if (RC_NEED[k] <= RC_OWN[k]) continue;
+    curRecPos = i;
+    const r = buyItem(u, k);
+    curRecPos = -1;
+    if (r === 0) { n++; recCount(u); }
+    else if (r === 1) poor = true;
+    else if (r === 3) full = true;
   }
   if (n > 0) return n;
   return full ? -4 : (poor ? -2 : -1);
@@ -2126,11 +2157,11 @@ function createChampion(kind, team, x, z) {
   }
   const u = newUnit(kind, team, x, z, mesh);
   u.def = def;
-  u.name = team === 1 ? (kind === 'azir' ? '라시드' : '하루토') : def.name;
+  u.name = def.name;
   u.level = 6;
   u.sl = kind === 'azir' ? [1, 3, 1, 1] : [3, 1, 1, 1];
   u.skillPts = u.level - (u.sl[0] + u.sl[1] + u.sl[2] + u.sl[3]);
-  u.gold = 2000;
+  u.gold = 0;
   u.items = [-1, -1, -1, -1, -1, -1];
   u.buyList = kind === 'yasuo' ? BUY_Y : BUY_A;
   u.range = def.range;
@@ -2156,7 +2187,7 @@ function createMinion(team, ranged, scale, cannon, sup) {
   const sx = team === 0 ? -(HALF_X - 6) : (HALF_X - 6);
   const u = newUnit(ranged ? 'ranged' : 'melee', team, sx, (Math.random() - 0.5) * 3, mesh);
   ringFx(sx, u.z, 0.3, 1.8, TEAM_HEX[team], 0.5);
-  u.hp = u.maxHp = (ranged ? 190 : 290) * scale;
+  u.hp = u.maxHp = (ranged ? 380 : 580) * scale;
   u.ad = (ranged ? 50 : 32) * scale;
   u.range = ranged ? 3.564 : 1.1;
   u.period = ranged ? 1.5 : 0.9;
@@ -2180,7 +2211,7 @@ function createMinion(team, ranged, scale, cannon, sup) {
   if (cannon) {
     mesh.scale.setScalar(1.4);
     u.cannon = true;
-    u.hp = u.maxHp = 520 * scale;
+    u.hp = u.maxHp = 1040 * scale;
     u.ad = 80 * scale;
     u.range = 3;
     u.period = 1.5;
@@ -2203,7 +2234,7 @@ function createMinion(team, ranged, scale, cannon, sup) {
   if (sup) {
     mesh.scale.setScalar(1.8);
     u.sup = true;
-    u.hp = u.maxHp = 1000 * scale;
+    u.hp = u.maxHp = 2000 * scale;
     u.ad = 170 * scale;
     u.armor = 40;
     u.mr = 30;
@@ -2827,6 +2858,27 @@ function expireTemp(d) {
   removeTemp(d);
 }
 
+let hitStopT = 0;
+
+function skillHit(src, dst, pw) {
+  const col = src.kind === 'azir' ? 0xffe08a : 0xcdeeff;
+  const n = dst.isChamp ? 3 + pw * 2 : 2;
+  const base = Math.random() * 6.2832;
+  for (let i = 0; i < n; i++) {
+    const a = base + i * 6.2832 / n;
+    const cx = Math.cos(a);
+    const cz = Math.sin(a);
+    rectFx(dst.x + cx * 0.6, dst.z + cz * 0.6, Math.atan2(cx, cz), 0.16, 0.9 + pw * 0.4, 0.04, 2.2 + pw * 0.9, (i & 1) ? 0xffffff : col, 0.22, cx * 5, cz * 5);
+  }
+  discFx(dst.x, 1.0, dst.z, 0.3, 1.2 + pw * 0.5, 0xffffff, 0.16);
+  if (!dst.isChamp) return;
+  ringFx(dst.x, dst.z, 0.4, 1.8 + pw * 0.6, col, 0.3);
+  sfx(5, dst.x, dst.z);
+  if (src === player || dst === player) addShake(0.08 * pw, 0.14);
+  const hs = 0.025 + 0.03 * pw;
+  if (hs > hitStopT) hitStopT = hs;
+}
+
 const MK_NAMES = ['', '', '더블 킬!', '트리플 킬!', '쿼드라 킬!', '펜타 킬!', '헥사 킬!'];
 const annEl = $('ann');
 let annT = 0;
@@ -3371,6 +3423,7 @@ function updateProjs(dt) {
         if (dx * dx + dz * dz <= rr * rr) {
           u.tStamp = p.stamp;
           damage(p.src, u, p.dmg, p.dtype);
+          if (p.kind === 1) skillHit(p.src, u, 2);
           if (p.kind === 2) {
             u.slowT = Math.max(u.slowT, 1.5);
             u.slowAmt = 0.4;
@@ -3566,6 +3619,7 @@ function updateRWalls(dt) {
         if (e.tStamp !== w.stamp) {
           e.tStamp = w.stamp;
           damage(own, e, (200 + own.ap * 0.75) * skMul(own, 3), 1);
+        skillHit(own, e, 2);
           const ea = (e.x - w.ox) * w.dx + (e.z - w.oz) * w.dz;
           const dist = Math.max(0.5, 6.5 - ea);
           pushUnit(e, w.dx * dist, w.dz * dist, 1.0);
@@ -3825,6 +3879,7 @@ function updateSoldiers(dt) {
         if (e.qStamp === s.castId) continue;
         e.qStamp = s.castId;
         damage(o, e, AZ_Q[rk(o, 0) - 1] + o.ap * azC(0, rk(o, 0)), 1);
+        skillHit(o, e, 1);
         e.slowT = 1;
         e.slowAmt = 0.25;
       }
@@ -3902,6 +3957,7 @@ function yasuoCircle(u) {
   for (let i = 0; i < n; i++) {
     const e = hitBuf[i];
     damage(u, e, qd, 0);
+    skillHit(u, e, tor ? 2 : 1);
     if (tor) knockUp(e, 1.0);
   }
   yasuoCircleFx(u, tor);
@@ -3935,7 +3991,9 @@ function castYasuo(u, slot, tx, tz, eq) {
     collectLine(u.team, u.x, u.z, dx, dz, 4.5, 0.5);
     const n = hitN;
     const qd = yaQDmg(u);
-    for (let i = 0; i < n; i++) damage(u, hitBuf[i], qd, 0);
+    for (let i = 0; i < n; i++) { damage(u, hitBuf[i], qd, 0); skillHit(u, hitBuf[i], 1); }
+    rectFx(u.x + dx * 2.6, u.z + dz * 2.6, u.yaw + 0.55, 0.25, 3.2, 0.05, 4.8, 0xffffff, 0.2, dx * 6, dz * 6);
+    rectFx(u.x + dx * 2.6, u.z + dz * 2.6, u.yaw - 0.55, 0.25, 3.2, 0.05, 4.8, 0xcdeeff, 0.2, dx * 6, dz * 6);
     rectFx(u.x + dx * 2.25, u.z + dz * 2.25, u.yaw, 1.2, 4.5, 0.4, 4.5, 0xcdeeff, 0.2, 0, 0);
     if (n > 0) { u.qStacks++; u.qStackT = 6; }
     return true;
@@ -3985,6 +4043,8 @@ function castYasuo(u, slot, tx, tz, eq) {
     if (u.eStk < 4) u.eStk++;
     u.eStkT = 5;
     if (u.kind === 'yasuo' && u.cd[0] > 0 && u.cd[0] <= 0.5) { u.cd[0] = 0; ringFx(u.x, u.z, 0.3, 1.6, 0x7fd0ff, 0.35); }
+    skillHit(u, best, 1);
+    for (let q = 0; q < 4; q++) discFx(u.x + ddx * q / 4, 0.9, u.z + ddz * q / 4, 0.5, 0.15, 0xbfefff, 0.35 + q * 0.04);
     if (u.shield <= 0) u.mp = Math.min(100, u.mp + 7.5);
     rectFx(u.x + ddx * 0.5, u.z + ddz * 0.5, u.yaw, 0.8, len, 0.2, len, 0xcdeeff, 0.3, 0, 0);
     return true;
@@ -4176,6 +4236,8 @@ function cast(u, slot, tx, tz) {
   const ok = u.kind === 'yasuo' ? castYasuo(u, slot, tx, tz, eq) : castAzir(u, slot, tx, tz);
   if (!ok) return false;
   startCastAnim(u, slot, eq);
+  if (slot < 3) ringFx(u.x, u.z, 0.3, 1.9, u.kind === 'azir' ? 0xffe08a : 0xbfefff, 0.25);
+  if (u === player) addShake(slot === 3 ? 0.3 : 0.07, 0.15);
   u.recallT = 0;
   sfx((u.kind === 'azir' ? 10 : 14) + slot, u.x, u.z);
   u.cd[slot] = skCd(u, slot);
@@ -4593,6 +4655,8 @@ function updateChampTimers(u, dt) {
         const e = u.rHit[k];
         if (!e.alive || !e.isChamp) continue;
         damage(u, e, YA_R[rk(u, 3) - 1] + bonusAd(u) * 1.5, 0);
+        skillHit(u, e, 3);
+        addShake(0.45, 0.3);
         discFx(e.x, 0.6, e.z, 0.4, 2.6, 0xffffff, 0.35);
         ringFx(e.x, e.z, 0.5, 3.2, 0xbfefff, 0.5);
       }
@@ -4684,6 +4748,7 @@ function updateDash(u, dt) {
       if (e.eStamp === u.eStamp) continue;
       e.eStamp = u.eStamp;
       damage(u, e, AZ_E[rk(u, 2) - 1] + u.ap * 0.6, 1);
+      skillHit(u, e, 1);
       if (!u.eGot) {
         u.eGot = true;
         if (u.wCharges < 2) {
@@ -4906,7 +4971,7 @@ function aiDodgeR(u) {
   u.mz = pz;
   if (move > 2.2) {
     if (u.kind === 'yasuo' && u.cd[2] <= 0 && cast(u, 2, px, pz)) return true;
-    if (u.sumCd[1] <= 0) useSummoner(u, 1, px, pz);
+    if (selDiff === 2 && u.sumCd[1] <= 0) useSummoner(u, 1, px, pz);
   }
   return true;
 }
@@ -5357,6 +5422,30 @@ function aiChampion(u, dt) {
       u.order = 1;
       u.mx = bo.x;
       u.mz = bo.z;
+      return;
+    }
+  }
+  if (u.aiModeT <= gameTime) { u.aiMode = (Math.random() * 3) | 0; u.aiModeT = gameTime + 8 + Math.random() * 8; }
+  let mode = u.aiMode;
+  if (mode === 1 && (player === null || player === u || player.team !== u.team || !player.alive)) mode = 0;
+  if (mode === 1) {
+    u.order = 1;
+    u.mx = clampX(player.x - dir * 2);
+    u.mz = player.z;
+    return;
+  }
+  if (mode === 2) {
+    let ft = null;
+    for (let i = 0; i < structList.length; i++) {
+      const st = structList[i];
+      if (st.team === u.team || !st.alive || st.kind !== 'tower' || st.temp) continue;
+      if (ft === null || st.x * dir < ft.x * dir) ft = st;
+    }
+    if (ft !== null) {
+      if (!(u.aiZt > gameTime)) { u.aiZ = (Math.random() - 0.5) * 3; u.aiZt = gameTime + 3; }
+      u.order = 1;
+      u.mx = ft.x - dir * (ft.range + ft.radius + 2.5);
+      u.mz = u.aiZ;
       return;
     }
   }
@@ -6357,17 +6446,50 @@ function effCost(k) {
   return it.cost - disc;
 }
 
+let shopFilter = 0;
+const shopInvEl = $('shopInv');
+const shopInvCells = [];
+for (let i = 0; i < 6; i++) {
+  const c = document.createElement('div');
+  c.className = 'sv';
+  c.addEventListener('mousedown', function (e) { e.stopPropagation(); trySell(i); });
+  shopInvEl.appendChild(c);
+  shopInvCells.push(c);
+}
+const shopTabEls = document.querySelectorAll('.stab');
+for (let i = 0; i < shopTabEls.length; i++) {
+  shopTabEls[i].addEventListener('mousedown', function (e) {
+    e.stopPropagation();
+    shopFilter = +shopTabEls[i].getAttribute('data-f');
+    for (let j = 0; j < shopTabEls.length; j++) shopTabEls[j].classList.toggle('on', j === i);
+    refreshShop();
+    fitShop();
+  });
+}
+
 function refreshShop() {
   shopGoldEl.textContent = (player.gold | 0) + ' G';
+  for (let i = 0; i < 6; i++) {
+    const k = player.items[i];
+    shopInvCells[i].innerHTML = k >= 0 ? icn(ITEMS[k].ic) : '';
+    shopInvCells[i].classList.toggle('full', k >= 0);
+  }
   for (let k = 0; k < ITEMS.length; k++) {
     const ec = effCost(k);
-    shopNodes[k].classList.toggle('no', player.gold < ec);
+    const can = player.gold >= ec;
+    shopNodes[k].classList.toggle('no', !can);
+    shopNodes[k].classList.toggle('ok', can);
+    shopNodes[k].style.display = (shopFilter === 0 || (shopFilter === 1 && !ITEMS[k].from) || (shopFilter === 2 && ITEMS[k].from) || (shopFilter === 3 && can)) ? '' : 'none';
     if (ITEMS[k].from) shopCostEls[k].textContent = ec === ITEMS[k].cost ? ec + ' G' : ec + ' G (부품 보유 -' + (ITEMS[k].cost - ec) + ')';
   }
 }
 
 function fitShop() {
+  const scr = H < 620 || W < 640;
+  shopEl.classList.toggle('scr', scr);
+  shopEl.style.display = shopOpen ? (scr ? 'flex' : 'block') : 'none';
   shopEl.style.transform = 'translate(-50%,-50%)';
+  if (scr) return;
   const h = shopEl.offsetHeight;
   const sc = Math.min(1, (H - 12) / h);
   if (sc < 1) shopEl.style.transform = 'translate(-50%,-50%) scale(' + sc + ')';
@@ -6443,8 +6565,8 @@ $('recBuyBtn').addEventListener('click', tryRecBuy);
 for (let k = 0; k < ITEMS.length; k++) {
   const it = ITEMS[k];
   const n = document.createElement('div');
-  n.className = 'si';
-  n.innerHTML = '<span class="sic">' + icn(it.ic) + '</span><span class="sn">' + it.n + '</span><span class="sd">' + it.d + '</span><span class="sc2">' + it.cost + ' G</span>';
+  n.className = it.from ? 'si up' : 'si';
+  n.innerHTML = '<span class="sic">' + icn(it.ic) + '</span><span class="sn">' + it.n + '</span><span class="sd">' + it.d + '</span>' + (it.from ? '<span class="sr">' + ITEMS[it.from[0]].n + ' + ' + ITEMS[it.from[1]].n + '</span>' : '') + '<span class="sc2">' + it.cost + ' G</span>';
   n.addEventListener('mousedown', function (e) { e.stopPropagation(); if (e.button === 0) tryBuy(k); });
   shopListEl.appendChild(n);
   shopNodes.push(n);
@@ -7132,6 +7254,7 @@ function frame(now) {
   lastT = now;
   if (dt > 0.05) dt = 0.05;
   if (dt < 0) dt = 0;
+  if (hitStopT > 0) { hitStopT -= dt; dt *= 0.06; }
   if (started && !settingsOpen) { update(dt); musicTick(); qHumTick(); }
   updateSnow(dt);
   renderer.render(scene, camera);
