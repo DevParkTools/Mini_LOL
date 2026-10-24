@@ -1844,6 +1844,19 @@ function recBuy(u) {
   let full = false;
   for (let i = 0; i < list.length; i++) {
     const k = list[i];
+    const it = ITEMS[k];
+    if (!it.from && !it.up) continue;
+    RC_NEED[k]++;
+    if (RC_NEED[k] <= RC_OWN[k]) continue;
+    curRecPos = i;
+    if (it.up && RC_OWN[0] === 0) {
+      if (u.gold >= ITEMS[0].cost + it.cost && buyItem(u, 0) === 0) { n++; recCount(u); if (buyItem(u, k) === 0) { n++; recCount(u); } }
+    } else if (buyItem(u, k) === 0) { n++; recCount(u); }
+    curRecPos = -1;
+  }
+  RC_NEED.fill(0);
+  for (let i = 0; i < list.length; i++) {
+    const k = list[i];
     RC_NEED[k]++;
     if (RC_NEED[k] <= RC_OWN[k]) continue;
     curRecPos = i;
@@ -5480,6 +5493,13 @@ function spawnWave() {
 }
 
 function updateInhibs(dt) {
+  for (let i = 0; i < structList.length; i++) {
+    const tw = structList[i];
+    if (!tw.twin || !tw.alive) continue;
+    let ih = null;
+    for (let j = 0; j < structList.length; j++) if (structList[j].kind === 'inhib' && structList[j].team === tw.team) { ih = structList[j]; break; }
+    if (ih !== null) tw.targetable = !ih.alive;
+  }
   for (let i = inhibWait.length - 1; i >= 0; i--) {
     const w = inhibWait[i];
     w.t -= dt;
