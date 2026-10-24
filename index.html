@@ -1676,11 +1676,11 @@ const ICONS = {
 };
 
 const SPELLS = {
-  heal: { n: '회복', ic: '💚', cd: 240, d: '체력을 회복하고 잠시 이동 속도가 증가합니다.' },
-  flash: { n: '점멸', ic: '✨', cd: 300, d: '조준한 방향으로 순간이동합니다.' },
-  exhaust: { n: '탈진', ic: '😮', cd: 210, d: '사거리 내 적 챔피언을 2.5초간 둔화시키고 가하는 피해를 35% 줄입니다.' },
-  ignite: { n: '점화', ic: '🔥', cd: 180, d: '사거리 내 적 챔피언에게 5초간 고정 피해를 주고 치유 효과를 줄입니다.' },
-  ghost: { n: '유체화', ic: '👻', cd: 210, d: '5초간 이동 속도가 크게 증가합니다.' }
+  heal: { n: '회복', ic: '💚', cd: 120, d: '체력을 회복하고 잠시 이동 속도가 증가합니다. 주변 아군 챔피언도 50%만큼 회복합니다.' },
+  flash: { n: '점멸', ic: '✨', cd: 150, d: '조준한 방향으로 순간이동합니다.' },
+  exhaust: { n: '탈진', ic: '😮', cd: 105, d: '사거리 내 적 챔피언을 2.5초간 둔화시키고 가하는 피해를 35% 줄입니다.' },
+  ignite: { n: '점화', ic: '🔥', cd: 90, d: '사거리 내 적 챔피언에게 5초간 고정 피해를 주고 치유 효과를 줄입니다.' },
+  ghost: { n: '유체화', ic: '👻', cd: 105, d: '5초간 이동 속도가 크게 증가합니다.' }
 };
 const SP_KEYS = ['heal', 'flash', 'exhaust', 'ignite', 'ghost'];
 let spFail = '';
@@ -2004,14 +2004,17 @@ const SK_EXTRA = {
 const tipEl = $('tip');
 let tipSlot = -1;
 
+function healAmt(u) { return 90 + u.level * 20; }
+
 function spellTipHtml(p, i) {
   const key = i === 4 ? 'D' : (i === 5 ? 'F' : 'G');
   if (i === 6) {
-    return '<div class="tn">표식 <span class="tl">[G]</span></div><div>눈덩이를 던져 처음 맞은 적에게 표식을 남깁니다. 표식이 남아 있는 동안 다시 사용하면 그 적에게 돌진합니다.</div><div>재사용 대기시간: <span class="tv">80초</span>' + (p.sumCd[2] > 0 ? ' · 남은 시간 <span class="tv">' + Math.ceil(p.sumCd[2]) + '초</span>' : '') + '</div>';
+    return '<div class="tn">표식 <span class="tl">[G]</span></div><div>눈덩이를 던져 처음 맞은 적에게 표식을 남깁니다. 표식이 남아 있는 동안 다시 사용하면 그 적에게 돌진합니다.</div><div>재사용 대기시간: <span class="tv">40초</span>' + (p.sumCd[2] > 0 ? ' · 남은 시간 <span class="tv">' + Math.ceil(p.sumCd[2]) + '초</span>' : '') + '</div>';
   }
   const sp = SPELLS[p.sp[i - 4]];
   const rem = p.sumCd[i - 4];
-  return '<div class="tn">' + sp.n + ' <span class="tl">[' + key + ']</span></div><div>' + sp.d + '</div><div>재사용 대기시간: <span class="tv">' + sp.cd + '초</span>' + (rem > 0 ? ' · 남은 시간 <span class="tv">' + Math.ceil(rem) + '초</span>' : '') + '</div>';
+  const hl = sp === SPELLS.heal ? '<div>회복량: <span class="tv">' + healAmt(p) + '</span> <span class="tl">(주변 아군 ' + Math.round(healAmt(p) * 0.5) + ' · 레벨당 +20)</span></div>' : '';
+  return '<div class="tn">' + sp.n + ' <span class="tl">[' + key + ']</span></div><div>' + sp.d + '</div>' + hl + '<div>재사용 대기시간: <span class="tv">' + sp.cd + '초</span>' + (rem > 0 ? ' · 남은 시간 <span class="tv">' + Math.ceil(rem) + '초</span>' : '') + '</div>';
 }
 
 function passiveTipHtml(p) {
@@ -2510,7 +2513,6 @@ function findEnemy(u, radius) {
     if (e.team === u.team || !e.alive || !e.targetable) continue;
     if (e.team === 1 && !e.mesh.visible) continue;
     if (!e.isStruct && hiddenFor(e, u.team)) continue;
-    if (e.isStruct && !e.temp && u.isChamp && u !== player && !allyMinionNear(e, u.team, 10)) continue;
     const dx = e.x - u.x;
     const dz = e.z - u.z;
     const r = radius + e.radius;
@@ -4317,7 +4319,19 @@ function useSummoner(u, idx, tx, tz) {
     return true;
   }
   if (ty === 'heal') {
-    healUnit(u, 90 + u.level * 12);
+    const hv = healAmt(u);
+    healUnit(u, hv);
+    for (let i = 0; i < champs.length; i++) {
+      const c = champs[i];
+      if (c === u || c.team !== u.team || !c.alive) continue;
+      const hx = c.x - u.x;
+      const hz = c.z - u.z;
+      if (hx * hx + hz * hz > 49) continue;
+      healUnit(c, hv * 0.5);
+      c.speedBoost = Math.max(c.speedBoost, 0.15);
+      c.speedBoostT = Math.max(c.speedBoostT, 1.5);
+      ringFx(c.x, c.z, 0.5, 2.0, 0x6cf08a, 0.5);
+    }
     sfx(25, u.x, u.z);
     u.speedBoost = 0.3;
     u.speedBoostT = 1.5;
@@ -4344,7 +4358,7 @@ function useSummoner(u, idx, tx, tz) {
         u.eqQueued = false;
         u.windT = 0;
         u.sbTarget = null;
-        u.sumCd[2] = 80;
+        u.sumCd[2] = 40;
         ringFx(u.x, u.z, 0.5, 2.2, 0xdff6ff, 0.4);
         sfx(26, u.x, u.z);
         return true;
@@ -4681,7 +4695,7 @@ function updateChampTimers(u, dt) {
   if (u.sumCd[0] > 0) u.sumCd[0] -= dt;
   if (u.sumCd[1] > 0) u.sumCd[1] -= dt;
   if (u.sumCd[2] > 0) u.sumCd[2] -= dt;
-  if (u.sbTarget !== null && u.sbT <= gameTime) { u.sbTarget = null; u.sumCd[2] = 80; }
+  if (u.sbTarget !== null && u.sbT <= gameTime) { u.sbTarget = null; u.sumCd[2] = 40; }
   if (u.buffT > 0) u.buffT -= dt;
   if (u.igT > 0) {
     u.igT -= dt;
@@ -5044,6 +5058,11 @@ function aiAvoidSoldiers(u, hr) {
     const cx = s.x - s.owner.x;
     const cz = s.z - s.owner.z;
     if (cx * cx + cz * cz > (SOL_CTRL + 0.5) * (SOL_CTRL + 0.5)) continue;
+    if (u.kind === 'yasuo') {
+      const ox = s.owner.x - u.x;
+      const oz = s.owner.z - u.z;
+      if (ox * ox + oz * oz < 36 && hr > 0.4) continue;
+    }
     const dx = u.x - s.x;
     const dz = u.z - s.z;
     const lim = SOL_R + u.radius + 1.0;
@@ -5295,7 +5314,6 @@ function aiChampion(u, dt) {
       if (!foe) { u.order = 1; u.target = null; u.mx = sg.x - dir * 3.5; u.mz = sg.z; return; }
     }
   }
-  if (u.kind === 'azir' && u.comboT === null && aiAvoidSoldiers(u, hr)) return;
   if (u.buyIdx < u.buyList.length && canShop(u)) aiShop(u);
   if (hr < 0.5 && u.sumCd[0] <= 0) {
     for (let i = 0; i < champs.length; i++) {
@@ -5404,7 +5422,6 @@ function aiChampion(u, dt) {
     for (let i = 0; i < structList.length; i++) {
       const st = structList[i];
       if (st.team === u.team || !st.alive || !st.targetable) continue;
-      if (!st.temp && !allyMinionNear(st, u.team, 10)) continue;
       const sx = st.x - u.x;
       const sz = st.z - u.z;
       const d2 = sx * sx + sz * sz;
@@ -5438,37 +5455,17 @@ function aiChampion(u, dt) {
       return;
     }
   }
-  if (u.aiModeT <= gameTime) { u.aiMode = (Math.random() * 2) | 0; u.aiModeT = gameTime + 8 + Math.random() * 8; }
-  if (u.aiMode === 1) {
-    let ft = null;
-    for (let i = 0; i < structList.length; i++) {
-      const st = structList[i];
-      if (st.team === u.team || !st.alive || st.kind !== 'tower' || st.temp) continue;
-      if (ft === null || st.x * dir < ft.x * dir) ft = st;
-    }
-    if (ft !== null) {
-      if (!(u.aiZt > gameTime)) { u.aiZ = (Math.random() - 0.5) * 3; u.aiZt = gameTime + 3; }
-      u.order = 1;
-      u.mx = ft.x - dir * (ft.range + ft.radius + 2.5);
-      u.mz = u.aiZ;
-      return;
-    }
+  let ft = null;
+  for (let i = 0; i < structList.length; i++) {
+    const st = structList[i];
+    if (st.team === u.team || !st.alive || st.kind !== 'tower' || st.temp) continue;
+    if (ft === null || st.x * dir < ft.x * dir) ft = st;
   }
-  let front = -1e9;
-  for (let i = 0; i < units.length; i++) {
-    const m = units[i];
-    if (m.team !== u.team || !m.alive || m.isChamp || m.isStruct) continue;
-    const px = m.x * dir;
-    if (px > front) front = px;
-  }
+  if (!(u.aiZt > gameTime)) { u.aiZ = (Math.random() - 0.5) * 3; u.aiZt = gameTime + 3; }
   u.order = 1;
-  if (front > -1e8) {
-    const fx = (front + 0.6) * dir;
-    const tw2 = towerAt(u.team, fx, 0, 1.0);
-    u.mx = tw2 ? tw2.x - dir * (tw2.range + tw2.radius + 2.5) : fx;
-    if (!(u.aiZt > gameTime)) { u.aiZ = (Math.random() - 0.5) * 3; u.aiZt = gameTime + 3; }
-    u.mz = u.aiZ;
-  } else { u.mx = dir * 2; u.mz = 0; }
+  if (ft !== null) u.mx = ft.x - dir * (ft.range + ft.radius + 2.5);
+  else u.mx = dir * (46 + MAP_EXT - 4);
+  u.mz = u.aiZ;
 }
 
 const superOn = [false, false];
