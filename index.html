@@ -5438,16 +5438,8 @@ function aiChampion(u, dt) {
       return;
     }
   }
-  if (u.aiModeT <= gameTime) { u.aiMode = (Math.random() * 3) | 0; u.aiModeT = gameTime + 8 + Math.random() * 8; }
-  let mode = u.aiMode;
-  if (mode === 1 && (player === null || player === u || player.team !== u.team || !player.alive)) mode = 0;
-  if (mode === 1) {
-    u.order = 1;
-    u.mx = clampX(player.x - dir * 2);
-    u.mz = player.z;
-    return;
-  }
-  if (mode === 2) {
+  if (u.aiModeT <= gameTime) { u.aiMode = (Math.random() * 2) | 0; u.aiModeT = gameTime + 8 + Math.random() * 8; }
+  if (u.aiMode === 1) {
     let ft = null;
     for (let i = 0; i < structList.length; i++) {
       const st = structList[i];
