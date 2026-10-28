@@ -876,7 +876,7 @@ function buildWorld() {
   for (let t = 0; t < 2; t++) {
     const bx = t === 0 ? -44.5 - MAP_EXT : 44.5 + MAP_EXT;
     const TCm = TEAM_HEX[t];
-    part(scene, gCyl(6.5, 6.8, 0.16, 6), matP(0x56687c, 0, 30), bx, 0.12, 0);
+    part(scene, gCyl(6.5, 6.8, 0.16, 6), mat(t === 0 ? 0x46607e : 0x7a4c58), bx, 0.12, 0);
     part(scene, gTor(6.4, 0.07), matP(0xc8aa6e, 0, 70), bx, 0.22, 0).rotation.x = Math.PI / 2;
     part(scene, gTor(6.0, 0.05), glow(TCm, 0.7), bx, 0.23, 0).rotation.x = Math.PI / 2;
     for (let sd = -1; sd <= 1; sd += 2) {
@@ -1000,7 +1000,7 @@ function updateWorldAnim(dt) {
   }
 }
 
-const OUT_MAT = new THREE.MeshBasicMaterial({ color: 0x0a1020, side: THREE.BackSide });
+const OUT_MAT = new THREE.MeshBasicMaterial({ color: 0x0a1020, side: THREE.BackSide, polygonOffset: true, polygonOffsetFactor: 2, polygonOffsetUnits: 4 });
 const phongCache = new Map();
 function matP(color, emissive, shin) {
   const k = color + '_' + (emissive || 0) + '_' + (shin || 40);
@@ -1498,9 +1498,9 @@ function buildNexus(team) {
   part(g, gCyl(3.3, 3.6, 0.45, 6), mat(0x6a7686), 0, 0.72, 0);
   part(g, gTor(3.3, 0.07), matP(GOLD, 0, 70), 0, 0.97, 0).rotation.x = Math.PI / 2;
   part(g, gTor(3.5, 0.05), glow(TC, 0.8), 0, 0.52, 0).rotation.x = Math.PI / 2;
-  part(g, gCyl(2.7, 3.2, 0.5, 6), mat(0x818d9c), 0, 1.2, 0);
-  part(g, gCyl(1.9, 2.3, 0.6, 6), mat(0x8b97a4), 0, 1.75, 0);
-  part(g, gTor(2.1, 0.05), glow(TC, 0.8), 0, 2.06, 0).rotation.x = Math.PI / 2;
+  part(g, gCyl(2.7, 3.2, 0.5, 6), mat(0x818d9c), 0, 1.17, 0);
+  part(g, gCyl(1.9, 2.3, 0.6, 6), mat(0x8b97a4), 0, 1.72, 0);
+  part(g, gTor(2.1, 0.05), glow(TC, 0.8), 0, 2.03, 0).rotation.x = Math.PI / 2;
   for (let i = 0; i < 6; i++) {
     const a = i * Math.PI / 3;
     part(g, gBox(0.14, 0.04, 1.3), glow(TC, 0.7), Math.cos(a) * 2.9, 1.46, Math.sin(a) * 2.9).rotation.y = Math.PI / 2 - a;
@@ -1515,7 +1515,7 @@ function buildNexus(team) {
     part(g, gBox(0.05, 1.6, 0.18), glow(TC, 0.85), Math.cos(pa) * 2.82, 2.5, Math.sin(pa) * 2.82).rotation.y = -pa;
   }
   part(g, gCyl(0.28, 0.28, 1.4, 8), glow(TC, 0.35), 0, 2.5, 0);
-  part(g, gCyl(0.5, 0.5, 0.2, 8), matP(GOLD, 0, 70), 0, 2.15, 0);
+  part(g, gCyl(0.5, 0.5, 0.2, 8), matP(GOLD, 0, 70), 0, 2.12, 0);
   const core = new THREE.Group();
   core.position.set(0, 3.5, 0);
   part(core, gOct(1.15), matP(TC, TE, 100), 0, 0, 0).scale.set(1, 1.5, 1);
@@ -1550,7 +1550,7 @@ function buildInhib(team) {
   const TC = TEAM_HEX[team];
   const TE = TEAM_EMI[team];
   part(g, gCyl(2.2, 2.5, 0.6, 8), mat(0x5a6573), 0, 0.3, 0);
-  part(g, gCyl(1.4, 1.8, 0.8, 8), mat(0x8b97a4), 0, 1.0, 0);
+  part(g, gCyl(1.4, 1.8, 0.8, 8), mat(0x8b97a4), 0, 0.97, 0);
   for (let i = 0; i < 4; i++) {
     const a = i * Math.PI / 2;
     part(g, gBox(0.38, 2.0, 0.38), mat(0x8b97a4), Math.cos(a) * 1.55, 1.6, Math.sin(a) * 1.55);
@@ -4186,6 +4186,20 @@ function endProj(p) {
   p.mesh.visible = false;
 }
 
+function projWallBlocked(p) {
+  const th = 0.5 + p.radius;
+  for (let k = 0; k < walls.length; k++) {
+    const w = walls[k];
+    if (!w.on || w.team === p.team) continue;
+    const rx = p.x - w.x;
+    const rz = p.z - w.z;
+    const along = rx * w.ax + rz * w.az;
+    const across = rx * w.nx + rz * w.nz;
+    if (Math.abs(along) <= w.half + p.radius * 0.5 && Math.abs(across) <= th) return true;
+  }
+  return false;
+}
+
 function updateProjs(dt) {
   for (let i = 0; i < projs.length; i++) {
     const p = projs[i];
@@ -4209,6 +4223,13 @@ function updateProjs(dt) {
       p.x += p.dx * step;
       p.z += p.dz * step;
       p.left -= step;
+      if (p.block && projWallBlocked(p)) {
+        discFx(p.x, p.h, p.z, 0.3, 1.2, 0x59b0ff, 0.25);
+        ringFx(p.x, p.z, 0.3, 1.8, 0x59b0ff, 0.3);
+        sfx(8, p.x, p.z);
+        endProj(p);
+        continue;
+      }
       for (let j = 0; j < units.length; j++) {
         const u = units[j];
         if (u.team === p.team || !u.alive || u.isStruct || u.tStamp === p.stamp || u.invulT > 0) continue;
@@ -4236,24 +4257,12 @@ function updateProjs(dt) {
       }
       if (p.left <= 0) { endProj(p); continue; }
     }
-    if (p.block) {
-      let blocked = false;
-      for (let k = 0; k < walls.length; k++) {
-        const w = walls[k];
-        if (!w.on || w.team === p.team) continue;
-        const rx = p.x - w.x;
-        const rz = p.z - w.z;
-        const along = rx * w.ax + rz * w.az;
-        const across = rx * w.nx + rz * w.nz;
-        if (Math.abs(along) <= w.half && Math.abs(across) <= 0.5) { blocked = true; break; }
-      }
-      if (blocked) {
-        discFx(p.x, p.h, p.z, 0.3, 1.2, 0x59b0ff, 0.25);
-        ringFx(p.x, p.z, 0.3, 1.8, 0x59b0ff, 0.3);
-        sfx(8, p.x, p.z);
-        endProj(p);
-        continue;
-      }
+    if (p.block && projWallBlocked(p)) {
+      discFx(p.x, p.h, p.z, 0.3, 1.2, 0x59b0ff, 0.25);
+      ringFx(p.x, p.z, 0.3, 1.8, 0x59b0ff, 0.3);
+      sfx(8, p.x, p.z);
+      endProj(p);
+      continue;
     }
     p.mesh.position.set(p.x, p.h, p.z);
     if (p.kind === 3) {
@@ -6539,36 +6548,11 @@ function aiChampion(u, dt) {
       if (hx * hx + hz * hz < 100) { useSummoner(u, 0, u.x, u.z); break; }
     }
   }
-  if (AI.retreat > 0) {
-    if (u.retreating) {
-      if (hr > AI.retreat + 0.25 || gameTime > u.retreatEnd || !foeNear(u.team, u.x, u.z, 16)) u.retreating = false;
-    } else if (hr < AI.retreat && foeNear(u.team, u.x, u.z, 12)) {
-      u.retreating = true;
-      u.retreatEnd = gameTime + 8;
-    }
-    if (u.retreating) {
-      let rt = null;
-      for (let i = 0; i < structList.length; i++) {
-        const st = structList[i];
-        if (st.team !== u.team || !st.alive || st.kind !== 'tower' || st.temp) continue;
-        if (rt === null || st.x * dir > rt.x * dir) rt = st;
-      }
-      u.diving = false;
-      u.order = 1;
-      u.target = null;
-      if (rt !== null) { u.mx = rt.x - dir * 2.5; u.mz = rt.z * 0.5; }
-      else { u.mx = -dir * (SPAWN_X - 4); u.mz = 0; }
-      return;
-    }
-  }
   let slotFree = false;
   for (let i = 0; i < 6; i++) if (u.items[i] < 0) { slotFree = true; break; }
   if (u.backing) {
     if (canShop(u) && (u.gold < AI.back * 0.6 || !slotFree)) u.backing = false;
-    else if (gameTime > u.backEnd || hr < 0.25) u.backing = false;
-  } else if (slotFree && u.gold >= AI.back && !foeNear(u.team, u.x, u.z, 13) && hr > 0.35) {
-    u.backing = true;
-    u.backEnd = gameTime + 70;
+    else if (gameTime > u.backEnd) u.backing = false;
   }
   if (u.backing) {
     u.order = 1;
@@ -6586,12 +6570,12 @@ function aiChampion(u, dt) {
       const mz = m.z - u.z;
       if (mx * mx + mz * mz <= 100) am++;
     }
-    if (u.diving) { if (hr < 0.3 || am === 0) u.diving = false; }
+    if (u.diving) { if (am === 0 || (hr < 0.3 && towerAt(u.team, u.x, u.z, 1.0) !== null)) u.diving = false; }
     else if (hr > AI.dive && am >= 1) u.diving = true;
   }
   let oppAlive = false;
   for (let i = 0; i < champs.length; i++) if (champs[i].team !== u.team && champs[i].alive) oppAlive = true;
-  const push = !oppAlive && hr > 0.3;
+  const push = !oppAlive;
   const dive = u.diving || push;
   const siege = !dive && aiSiege(u);
   if (!dive) {
@@ -6858,7 +6842,7 @@ const fctx = fogCv.getContext('2d');
 const fogTex = new THREE.CanvasTexture(fogCv);
 const fogMesh = new THREE.Mesh(new THREE.PlaneGeometry(MAP_W, 25.6), new THREE.MeshBasicMaterial({ map: fogTex, transparent: true, depthWrite: false }));
 fogMesh.rotation.x = -Math.PI / 2;
-fogMesh.position.y = 0.12;
+fogMesh.position.y = 0.3;
 fogMesh.renderOrder = 1;
 scene.add(fogMesh);
 const VIS_N = 96;
