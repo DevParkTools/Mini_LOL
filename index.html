@@ -2571,7 +2571,7 @@ const SK_DESC = {
     '병사 벽이 돌진해 적을 공중으로 띄워 밀어낸 뒤 잠시 벽으로 서 있습니다.'
   ],
   yasuo: [
-    '전방을 찌릅니다. 적중하면 6초간 유지되는 스택이 쌓이고, 스택 2가 되면 다음 사용 시 사거리 11.5의 회오리가 적을 1초간 공중에 띄웁니다. 평타로 취급되어 치명타가 적용되며, 재사용 대기시간과 시전 속도는 공격 속도에 비례해 줄어듭니다. 돌진 중에는 반경 3.75의 원형 베기가 됩니다.',
+    '전방을 찌릅니다. 적중하면 6초간 유지되는 스택이 쌓이고, 스택 2가 되면 다음 사용 시 사거리 9.0의 회오리가 적을 1초간 공중에 띄웁니다. 평타로 취급되어 치명타가 적용되며, 재사용 대기시간과 시전 속도는 공격 속도에 비례해 줄어듭니다. 돌진 중에는 반경 3.2의 원형 베기가 됩니다.',
     '앞쪽에 바람 장막을 만들어 4초 동안 적의 모든 투사체를 막습니다(포탑 공격 제외).',
     '적을 관통해 돌진합니다. 같은 적에게는 일정 시간 다시 쓸 수 없고(재사용 대기시간 감소 영향 없음), 연속 사용 시 피해가 최대 100%까지 늘어납니다. Q의 재사용 대기시간이 0.5초 이하면 초기화됩니다.',
     '공중에 뜬 적 챔피언 뒤로 순간이동해 1초간 베어 주변의 공중에 뜬 적 챔피언까지 붙잡고, 마지막에 피해를 줍니다. 바람이 가득 차고 Q 스택을 잃으며, 15초간 치명타가 대상의 추가 방어력 60%를 무시합니다.'
@@ -4186,16 +4186,25 @@ function endProj(p) {
   p.mesh.visible = false;
 }
 
-function projWallBlocked(p) {
-  const th = 0.5 + p.radius;
+function projWallBlocked(p, ox, oz) {
+  const th = 0.1 + p.radius * 0.8;
+  const mx = (p.x + ox) * 0.5;
+  const mz = (p.z + oz) * 0.5;
   for (let k = 0; k < walls.length; k++) {
     const w = walls[k];
     if (!w.on || w.team === p.team) continue;
-    const rx = p.x - w.x;
-    const rz = p.z - w.z;
-    const along = rx * w.ax + rz * w.az;
-    const across = rx * w.nx + rz * w.nz;
-    if (Math.abs(along) <= w.half + p.radius * 0.5 && Math.abs(across) <= th) return true;
+    const lim = w.half * 0.97;
+    let rx = p.x - w.x;
+    let rz = p.z - w.z;
+    if (Math.abs(rx * w.ax + rz * w.az) <= lim && Math.abs(rx * w.nx + rz * w.nz) <= th) return true;
+    rx = mx - w.x;
+    rz = mz - w.z;
+    if (Math.abs(rx * w.ax + rz * w.az) <= lim && Math.abs(rx * w.nx + rz * w.nz) <= th) return true;
+    rx = ox - w.x;
+    rz = oz - w.z;
+    const a0 = rx * w.nx + rz * w.nz;
+    const a1 = (p.x - w.x) * w.nx + (p.z - w.z) * w.nz;
+    if (a0 * a1 < 0 && Math.abs(rx * w.ax + rz * w.az) <= lim) return true;
   }
   return false;
 }
@@ -4205,6 +4214,8 @@ function updateProjs(dt) {
     const p = projs[i];
     if (!p.on) continue;
     const step = p.speed * dt;
+    const opx = p.x;
+    const opz = p.z;
     if (p.kind === 0) {
       const t = p.target;
       if (!t || !t.alive || !t.targetable) { endProj(p); continue; }
@@ -4223,7 +4234,7 @@ function updateProjs(dt) {
       p.x += p.dx * step;
       p.z += p.dz * step;
       p.left -= step;
-      if (p.block && projWallBlocked(p)) {
+      if (p.block && projWallBlocked(p, opx, opz)) {
         discFx(p.x, p.h, p.z, 0.3, 1.2, 0x59b0ff, 0.25);
         ringFx(p.x, p.z, 0.3, 1.8, 0x59b0ff, 0.3);
         sfx(8, p.x, p.z);
@@ -4257,7 +4268,7 @@ function updateProjs(dt) {
       }
       if (p.left <= 0) { endProj(p); continue; }
     }
-    if (p.block && projWallBlocked(p)) {
+    if (p.block && projWallBlocked(p, opx, opz)) {
       discFx(p.x, p.h, p.z, 0.3, 1.2, 0x59b0ff, 0.25);
       ringFx(p.x, p.z, 0.3, 1.8, 0x59b0ff, 0.3);
       sfx(8, p.x, p.z);
@@ -4805,17 +4816,17 @@ const FX8S = [];
 for (let i = 0; i < 8; i++) { FX8C.push(Math.cos(i * Math.PI / 4)); FX8S.push(Math.sin(i * Math.PI / 4)); }
 
 function yasuoCircleFx(u, tor) {
-  ringFx(u.x, u.z, 0.5, 4.3, tor ? 0x59b9ff : 0xffffff, 0.5);
-  ringFx(u.x, u.z, 0.2, 3.75, 0x7fd0ff, 0.6);
-  discFx(u.x, 0.12, u.z, 0.6, 3.75, 0x59b9ff, 0.35);
+  ringFx(u.x, u.z, 0.5, 3.7, tor ? 0x59b9ff : 0xffffff, 0.5);
+  ringFx(u.x, u.z, 0.2, 3.2, 0x7fd0ff, 0.6);
+  discFx(u.x, 0.12, u.z, 0.6, 3.2, 0x59b9ff, 0.35);
   for (let i = 0; i < 8; i++) {
-    rectFx(u.x + FX8C[i] * 1.9, u.z + FX8S[i] * 1.9, Math.atan2(FX8C[i], FX8S[i]), 0.35, 2.6, 0.1, 3.4, 0xffffff, 0.3, FX8C[i] * 3, FX8S[i] * 3);
+    rectFx(u.x + FX8C[i] * 1.6, u.z + FX8S[i] * 1.6, Math.atan2(FX8C[i], FX8S[i]), 0.35, 2.2, 0.1, 2.9, 0xffffff, 0.3, FX8C[i] * 3, FX8S[i] * 3);
   }
-  if (tor) discFx(u.x, 1.0, u.z, 0.5, 3.6, 0x7cc9ff, 0.4);
+  if (tor) discFx(u.x, 1.0, u.z, 0.5, 3.1, 0x7cc9ff, 0.4);
 }
 
 function yasuoCircle(u) {
-  collectCircle(u.team, u.x, u.z, 3.75, false);
+  collectCircle(u.team, u.x, u.z, 3.2, false);
   const tor = u.qStacks >= 2;
   const n = hitN;
   const qd = yaQDmg(u);
@@ -4865,7 +4876,7 @@ function castYasuo(u, slot, tx, tz, eq) {
       ringFx(u.x, u.z, 0.6, 4.2, 0x59b9ff, 0.6);
       discFx(u.x, 0.8, u.z, 0.6, 3.2, 0x7cc9ff, 0.45);
       addShake(0.25, 0.25);
-      spawnProj(u, 1, u.x + dx * 0.8, u.z + dz * 0.8, dx, dz, 7.5, 11.5, 0.7, yaQDmg(u), 0, 0xbfefff, null, true, 1.1);
+      spawnProj(u, 1, u.x + dx * 0.8, u.z + dz * 0.8, dx, dz, 9.5, 9.0, 0.7, yaQDmg(u), 0, 0xbfefff, null, true, 1.1);
       rectFx(u.x + dx * 1.6, u.z + dz * 1.6, u.yaw, 1.6, 3.2, 0.3, 6.0, 0x59b9ff, 0.32, dx * 10, dz * 10);
       rectFx(u.x + dx * 1.2, u.z + dz * 1.2, u.yaw, 0.5, 2.4, 0.06, 6.5, 0xffffff, 0.26, dx * 14, dz * 14);
       u.qStacks = 0;
@@ -5435,7 +5446,8 @@ function cast(u, slot, tx, tz) {
   const eq = u.kind === 'yasuo' && slot === 0 && u.dashT > 0 && free;
   const rOk = u.kind === 'yasuo' && slot === 3 && free;
   const axE = u.kind === 'aatrox' && slot === 2 && free;
-  const dashOk = eq || rOk || axE || (u.kind === 'azir' && u.dashKind === 1 && u.dashT > 0 && free && u.lockT <= 0);
+  const yaE = u.kind === 'yasuo' && slot === 2 && free && u.dashT <= 0;
+  const dashOk = eq || rOk || axE || yaE || (u.kind === 'azir' && u.dashKind === 1 && u.dashT > 0 && free && u.lockT <= 0);
   if (!dashOk && (u.stunT > 0 || u.airT > 0 || u.lockT > 0 || u.forceT > 0 || u.dashT > 0)) { castFail = '행동 불가 상태입니다'; return false; }
   if (u.sl[slot] <= 0) { castFail = '아직 배우지 않은 스킬입니다'; return false; }
   if (u.cd[slot] > 0) { castFail = '재사용 대기 중'; return false; }
@@ -5443,6 +5455,7 @@ function cast(u, slot, tx, tz) {
   if (u.def.mana && u.mp < cost) { castFail = '마나가 부족합니다'; return false; }
   const ok = u.kind === 'yasuo' ? castYasuo(u, slot, tx, tz, eq) : (u.kind === 'aatrox' ? castAatrox(u, slot, tx, tz) : castAzir(u, slot, tx, tz));
   if (!ok) return false;
+  if (u.kind === 'yasuo' && slot === 0 && !eq) u.lockT = Math.max(u.lockT, u.bigQ ? 0.3 : 0.22);
   startCastAnim(u, slot, eq);
   if (slot < 3) ringFx(u.x, u.z, 0.3, 1.9, u.kind === 'azir' ? 0xffc83a : (u.kind === 'aatrox' ? 0xff5a5a : 0x59b9ff), 0.25);
   if (u === player) addShake(slot === 3 ? 0.3 : 0.07, 0.15);
@@ -8374,7 +8387,7 @@ function drawHud(dt) {
       hctx.fillText(u.level, sx - bw / 2 - 9, sy + bh / 2);
       hctx.fillStyle = 'rgba(0,0,0,0.75)';
       hctx.fillRect(sx - bw / 2 - 1, sy + bh + 1, bw + 2, 5);
-      hctx.fillStyle = '#3b82f6';
+      hctx.fillStyle = !u.def.mana && u.mp >= 100 ? '#ffffff' : '#3b82f6';
       hctx.fillRect(sx - bw / 2, sy + bh + 2, bw * Math.max(0, u.mp / u.maxMp), 3);
     }
     if (u.temp && u.buildT > 0) {
