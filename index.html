@@ -184,6 +184,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#05080f;font-family:'M
 .sides{display:flex;gap:12px;margin:10px 0;justify-content:center;position:relative}
 .side{padding:8px 18px;border:2px solid #5a4a28;color:#cdbf9a;background:#10203a;border-radius:4px;cursor:pointer;font-weight:700}
 .side.on{border-color:#ffe7a3;color:#fff;background:#24385c}
+.side.urf.on{border-color:#ffb02e;background:#5a3210;color:#ffe3a8}
 .cards{display:flex;gap:28px;margin:26px 0;flex-wrap:wrap;justify-content:center;position:relative}
 .cic{font-size:72px;text-align:center;line-height:1.2}
 .crole{text-align:center;color:#8fb4e8;font-size:14px;margin-top:2px}
@@ -226,6 +227,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#05080f;font-family:'M
 #start .side{border-radius:2px;background:linear-gradient(#14284a,#0b172c);transition:.15s}
 #start .side:hover{border-color:#c8aa6e;transform:translateY(-1px)}
 #start .side.on{box-shadow:0 0 14px rgba(110,170,255,.55)}
+#start .side.urf.on{box-shadow:0 0 14px rgba(255,170,50,.7)}
 #start .card{position:relative;overflow:hidden;background:linear-gradient(160deg,#16305a,#08111e 70%);border:2px solid #8a6a2a;box-shadow:0 6px 22px rgba(0,0,0,.6),inset 0 0 30px rgba(80,140,230,.12)}
 #start .card::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:linear-gradient(90deg,transparent,#ffe7a3,transparent)}
 #start .card::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.12) 50%,transparent 60%);transform:translateX(-120%);transition:transform .6s}
@@ -448,7 +450,7 @@ body.tch #shopList{grid-template-columns:repeat(3,1fr)}body.tch .si{min-height:6
       <div class="ab sm pas" data-i="7"><span class="key">P</span><span class="ic"></span><div class="cd"></div><div class="cdt"></div><span class="cnt"></span></div>
     </div>
     <div class="gauge"><i id="hpf"></i><span id="hpt"></span></div>
-    <div class="gauge"><i id="mpf"></i><span id="mpt"></span></div>
+    <div class="gauge" id="mpg"><i id="mpf"></i><span id="mpt"></span></div>
     <div id="xpbar"><div id="xpf"></div></div>
   </div>
   <div id="items" class="panel"><div class="it" id="it0"></div><div class="it" id="it1"></div><div class="it" id="it2"></div><div class="it" id="it3"></div><div class="it" id="it4"></div><div class="it" id="it5"></div><div id="shopBtn">🛒 상점 [P]</div><div id="recBtn">🏠 [B]</div></div>
@@ -461,7 +463,7 @@ body.tch #shopList{grid-template-columns:repeat(3,1fr)}body.tch .si{min-height:6
   <div class="subtitle">미니 아레나</div>
   <div class="subtitle sub2" style="font-size:12px;letter-spacing:6px;color:#8fb4e8;margin-top:4px">ARAM · 2 VS 2 · 단판 승부</div>
   <div class="tline"></div>
-  <div class="sides"><div class="side on" data-s="0">🔵 블루 진영</div><div class="side" data-s="1">🔴 레드 진영</div></div>
+  <div class="sides"><div class="side on" data-s="0">🔵 블루 진영</div><div class="side" data-s="1">🔴 레드 진영</div><div class="side urf" id="urfBtn">⚡ 우르프</div></div>
   <div class="optrow o1"><span class="optl">난이도</span><div id="diffs" class="opts"></div></div>
   <div class="optrow o2"><span class="optl">스펠 D</span><div id="spD" class="opts"></div></div>
   <div class="optrow o3"><span class="optl">스펠 F</span><div id="spF" class="opts"></div></div>
@@ -500,6 +502,9 @@ const TEAM_CSS = ['#4a8fff', '#e5443c'];
 const ALLY_CSS = ['#3aa0ff', '#e5443c'];
 const baseDiscs = [];
 let sideRed = false;
+let urf = false;
+let goldRate = 4.2;
+let xpMul = 1;
 const TEAM_EMI = [0x0d2650, 0x50120e];
 const WHITE_C = new THREE.Color(0xffffff);
 const tmpCol = new THREE.Color();
@@ -1324,6 +1329,13 @@ function buildSoldier(team) {
   g.userData.spear = spear;
   g.userData.armR = armR;
   g.userData.legs = [lgL, lgR];
+  const atkMatA = new THREE.MeshBasicMaterial({ color: team === 0 ? 0x2f8cff : 0xff3a2a, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
+  const atkMatB = new THREE.MeshBasicMaterial({ color: team === 0 ? 0xbfe4ff : 0xffc2b0, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
+  part(body, gSph(0.8), atkMatA, 0, 0.9, 0);
+  part(spear, gCyl(0.16, 0.16, 1.8, 8), atkMatA, 0, 0.35, 0);
+  part(spear, gCyl(0.06, 0.06, 1.7, 6), atkMatB, 0, 0.35, 0);
+  part(spear, gSph(0.34), atkMatB, 0, 1.15, 0);
+  g.userData.atkGl = [atkMatA, atkMatB];
   const ring = new THREE.Mesh(teamRingGeo, basic(TEAM_HEX[team], 0.85));
   ring.position.y = 0.05;
   ring.scale.set(0.8, 1, 0.8);
@@ -1806,7 +1818,7 @@ function newMs() { return { xp: 0, g: 0, w: 0, k: 0, d: 0, a: 0 }; }
 function newSave() {
   return {
     v: 1,
-    set: { diff: 1, red: false, sp: ['heal', 'flash'], champ: 'azir', sfx: 1, mus: 1 },
+    set: { diff: 1, red: false, urf: false, sp: ['heal', 'flash'], champ: 'azir', sfx: 1, mus: 1 },
     tot: { g: 0, w: 0, k: 0, d: 0, a: 0, cs: 0, t: 0, bk: 0, ba: 0, bdmg: 0, fast: 0, streak: 0, bstreak: 0 },
     ms: { azir: newMs(), yasuo: newMs(), aatrox: newMs() },
     hist: []
@@ -1823,6 +1835,7 @@ function loadSave() {
     if (o.set) {
       if (typeof o.set.diff === 'number' && o.set.diff >= 0 && o.set.diff < 4) base.set.diff = o.set.diff;
       base.set.red = o.set.red === true;
+      base.set.urf = o.set.urf === true;
       if (Array.isArray(o.set.sp) && o.set.sp.length === 2) base.set.sp = [String(o.set.sp[0]), String(o.set.sp[1])];
       if (typeof o.set.sfx === 'number') base.set.sfx = Math.max(0, Math.min(1, o.set.sfx));
       if (typeof o.set.mus === 'number') base.set.mus = Math.max(0, Math.min(1, o.set.mus));
@@ -2142,6 +2155,7 @@ function recalc(u) {
     }
   }
   if (u.cheat) bAs += 1;
+  if (urf) { bAs += 0.5; u.speed *= 1.2; }
   u.asMul = (1 + d.asg * L) * (1 + bAs);
   u.period = 1 / (d.as * u.asMul);
   u.ls = bLs;
@@ -2489,13 +2503,14 @@ function yaQDmg(u) { return Math.random() < u.crit ? YA_Q[rk(u, 0) - 1] + u.ad *
 function skMul(u, s) { return 1 + (s === 3 ? 0.4 : 0.25) * (rk(u, s) - 1); }
 function skCd(u, s) {
   const c = u.def.skills[s].cds[rk(u, s) - 1];
-  if (u.kind === 'yasuo' && s === 0) { let red = (u.asMul - 1) / 1.67; if (red > 0.667) red = 0.667; const v = c * (1 - red) * (1 - u.cdr); return v < 1.33 ? 1.33 : v; }
+  if (u.kind === 'yasuo' && s === 0) { let red = (u.asMul - 1) / 1.67; if (red > 0.667) red = 0.667; const v = c * (1 - red) * (1 - u.cdr); const w = urf ? v * 0.25 : v; return w < 1.33 ? 1.33 : w; }
   if (u.kind === 'yasuo' && s === 2) return c;
-  if (u.kind === 'aatrox' && s === 0 && u.qStacks > 0) return 0.7;
-  return c * (1 - u.cdr);
+  if (u.kind === 'aatrox' && s === 0 && u.qStacks > 0) return urf ? 0.3 : 0.7;
+  const v = c * (1 - u.cdr);
+  return urf ? Math.max(0.3, v * 0.2) : v;
 }
-function skCost(u, s) { return u.def.skills[s].costs[rk(u, s) - 1]; }
-function wRech(u) { return 12 - 1.5 * (rk(u, 1) - 1); }
+function skCost(u, s) { return urf ? 0 : u.def.skills[s].costs[rk(u, s) - 1]; }
+function wRech(u) { return (12 - 1.5 * (rk(u, 1) - 1)) * (urf ? 0.25 : 1); }
 
 function canLearn(u, s) {
   if (u.skillPts <= 0) return false;
@@ -3271,7 +3286,7 @@ function xpNeed(l) { return 140 + l * 55; }
 
 function gainXp(u, a) {
   if (u.level >= MAX_LEVEL) return;
-  u.xp += a;
+  u.xp += a * xpMul;
   while (u.level < MAX_LEVEL && u.xp >= xpNeed(u.level)) {
     u.xp -= xpNeed(u.level);
     u.level++;
@@ -4315,7 +4330,7 @@ function updateProjs(dt) {
 
 const soldiers = [];
 for (let i = 0; i < 10; i++) {
-  soldiers.push({ on: false, owner: null, mesh: null, team: -1, x: 0, z: 0, ox: 0, oz: 0, tx: 0, tz: 0, state: 0, life: 0, age: 0, castId: 0, atkT: 0, faced: false, atkDur: 0.3, trailT: 0, faceYaw: 0, warned: false, sandT: 0, danger: false });
+  soldiers.push({ on: false, owner: null, mesh: null, team: -1, x: 0, z: 0, ox: 0, oz: 0, tx: 0, tz: 0, state: 0, life: 0, age: 0, castId: 0, atkT: 0, glT: 0, faced: false, atkDur: 0.3, trailT: 0, faceYaw: 0, warned: false, sandT: 0, danger: false });
 }
 
 function spawnSoldier(owner, x, z) {
@@ -4362,6 +4377,7 @@ function spawnSoldier(owner, x, z) {
   s.mesh.visible = true;
   s.mesh.scale.set(0.84, 1.2, 1.2);
   s.atkT = 0;
+  s.glT = 0;
   s.faced = false;
   s.trailT = 0;
   s.warned = false;
@@ -4784,6 +4800,11 @@ function updateSoldiers(dt) {
         sparkFx(s.x + fyl * (0.9 + thr * 1.4), 0.9, s.z + fzl * (0.9 + thr * 1.4), fyl * 2, 0.5, fzl * 2, s.team === player.team ? 0x4aa6ff : 0xff4a3a, 0.2, 1.6, 4);
       }
     }
+    if (s.atkT > 0) s.glT = 0.45;
+    else if (s.glT > 0) s.glT -= dt;
+    const gk = s.glT > 0 ? Math.min(1, s.glT / 0.3) : 0;
+    sud.atkGl[0].opacity = gk * 0.55;
+    sud.atkGl[1].opacity = gk * 0.9;
     s.mesh.rotation.y = yaw;
     sud.body.rotation.x = lean;
     sud.spear.rotation.x = tilt;
@@ -5947,7 +5968,7 @@ function updateChampTimers(u, dt) {
   }
   if (u.hp < u.maxHp) u.hp = Math.min(u.maxHp, u.hp + u.regen * dt * (u.cutUntil > gameTime ? 0.6 : 1));
   if (u.def.mana && u.mp < u.maxMp) u.mp = Math.min(u.maxMp, u.mp + u.mpRegen * dt);
-  u.gold += 4.2 * dt;
+  u.gold += goldRate * dt;
   if (u.qStackT > 0) {
     u.qStackT -= dt;
     if (u.qStackT <= 0) {
@@ -6020,7 +6041,7 @@ function updateDash(u, dt) {
 function updateUnit(u, dt) {
   if (!u.alive) {
     if (u.isChamp) {
-      u.gold += 4.2 * dt;
+      u.gold += goldRate * dt;
       u.respawnT -= dt;
       for (let k = 0; k < 4; k++) if (u.cd[k] > 0) u.cd[k] -= dt;
       if (u.sumCd[0] > 0) u.sumCd[0] -= dt;
@@ -7003,7 +7024,7 @@ function recordMatch(win) {
   const cs = player.cs;
   const grade = matchGrade(win, k, d, a);
   let gain = 50 + (win ? 50 : 0) + k * 8 + a * 4 - d * 2 + Math.min(40, dur / 30) + cs * 0.3;
-  gain = Math.max(20, Math.round(gain * MS_DM[selDiff]));
+  gain = Math.max(20, Math.round(gain * MS_DM[selDiff] * (urf ? 0.7 : 1)));
   const ms = save.ms[kind];
   const before = ms.xp;
   const lvBefore = msLevel(before);
@@ -7792,7 +7813,7 @@ function updateSnow(dt) {
 
 const el = {
   sb: $('sb'), sr: $('sr'), clock: $('clock'), kda: $('kda'), dead: $('dead'),
-  hpf: $('hpf'), hpt: $('hpt'), mpf: $('mpf'), mpt: $('mpt'), xpf: $('xpf'), lvl: $('lvl'), pIcon: $('pIcon'),
+  hpf: $('hpf'), hpt: $('hpt'), mpg: $('mpg'), mpf: $('mpf'), mpt: $('mpt'), xpf: $('xpf'), lvl: $('lvl'), pIcon: $('pIcon'),
   stAd: $('stAd'), stAp: $('stAp'), stAr: $('stAr'), stMr: $('stMr'), stSp: $('stSp'), stAs: $('stAs'), stCr: $('stCr'), stGold: $('stGold')
 };
 const abNodes = document.querySelectorAll('.ab');
@@ -7866,7 +7887,7 @@ function buildEd(u) {
   edEl.appendChild(el);
   edList.push({ u: u, el: el, cd: cd, t: t, sec: -1 });
 }
-const last = {  info: 0, qt: -1, it: [-2, -2, -2, -2, -2, -2], flow: false, up: [false, false, false, false], rk: [-1, -1, -1, -1], sp: -1, gold: -1, wg: -1, hp: -1, hpMax: -1, mp: -1, mpMax: -1, xp: -1, lvl: -1, kda: '', sec: -1, sb: -1, sr: -1, deadSec: -1, pct: [-1, -1, -1, -1, -1, -1, -1], txt: ['', '', '', '', '', '', ''], low: [-1, -1, -1, -1, -1, -1, -1], cnt: [-1, -1, -1, -1, -1, -1, -1] };
+const last = {  info: 0, qt: -1, it: [-2, -2, -2, -2, -2, -2], flow: false, up: [false, false, false, false], rk: [-1, -1, -1, -1], sp: -1, gold: -1, wg: -1, hp: -1, hpMax: -1, mp: -1, mpMax: -1, xp: -1, lvl: -1, kda: '', axr: -2, sec: -1, sb: -1, sr: -1, deadSec: -1, pct: [-1, -1, -1, -1, -1, -1, -1], txt: ['', '', '', '', '', '', ''], low: [-1, -1, -1, -1, -1, -1, -1], cnt: [-1, -1, -1, -1, -1, -1, -1] };
 
 last.pct.push(-1);
 last.txt.push('');
@@ -8147,14 +8168,38 @@ function updateHud(dt) {
   }
   const mp = Math.floor(p.mp);
   const rdy = !p.def.mana && p.mp >= 100;
-  if (mp !== last.mp || p.maxMp !== last.mpMax || rdy !== last.flow) {
-    last.mp = mp;
-    last.mpMax = p.maxMp;
-    last.flow = rdy;
-    el.mpf.style.background = rdy ? '#ffffff' : '';
-    el.mpt.style.color = rdy ? '#1a2a44' : '';
-    el.mpf.style.width = (p.mp / p.maxMp * 100) + '%';
-    el.mpt.textContent = p.def.mana ? mp + ' / ' + Math.floor(p.maxMp) : (p.kind === 'aatrox' ? (rdy ? '사신 태세 준비' : '사신 태세 ' + mp + '%') : (rdy ? '바람 100% · 보호막 준비' : '바람 ' + mp + '%'));
+  if (p.kind === 'aatrox') {
+    const rt = p.axRT;
+    const key = rt > 0 ? Math.ceil(rt * 10) : -1;
+    if (key !== last.axr) {
+      last.axr = key;
+      last.mp = -1;
+      el.mpg.style.visibility = rt > 0 ? 'visible' : 'hidden';
+      if (rt > 0) {
+        el.mpf.style.background = '#e0384a';
+        el.mpt.style.color = '#fff';
+        el.mpf.style.width = Math.min(100, rt * 10) + '%';
+        el.mpt.textContent = '세계의 끝 ' + rt.toFixed(1) + '초';
+      }
+    }
+  } else {
+    if (last.axr !== -2) {
+      last.axr = -2;
+      last.mp = -1;
+      last.flow = !rdy;
+      el.mpg.style.visibility = 'visible';
+      el.mpf.style.background = '';
+      el.mpt.style.color = '';
+    }
+    if (mp !== last.mp || p.maxMp !== last.mpMax || rdy !== last.flow) {
+      last.mp = mp;
+      last.mpMax = p.maxMp;
+      last.flow = rdy;
+      el.mpf.style.background = rdy ? '#ffffff' : '';
+      el.mpt.style.color = rdy ? '#1a2a44' : '';
+      el.mpf.style.width = (p.mp / p.maxMp * 100) + '%';
+      el.mpt.textContent = p.def.mana ? mp + ' / ' + Math.floor(p.maxMp) : (p.kind === 'aatrox' ? (rdy ? '사신 태세 준비' : '사신 태세 ' + mp + '%') : (rdy ? '바람 100% · 보호막 준비' : '바람 ' + mp + '%'));
+    }
   }
   const xp = p.level >= MAX_LEVEL ? 100 : Math.floor(p.xp / xpNeed(p.level) * 100);
   if (xp !== last.xp) { last.xp = xp; el.xpf.style.width = xp + '%'; }
@@ -8240,7 +8285,7 @@ function updateHud(dt) {
   }
   if (teamKills[0] !== last.sb) { last.sb = teamKills[0]; el.sb.textContent = teamKills[0]; }
   if (teamKills[1] !== last.sr) { last.sr = teamKills[1]; el.sr.textContent = teamKills[1]; }
-  const kda = p.kills + '/' + p.deaths + '/' + p.assists + '   CS ' + p.cs;
+  const kda = (urf ? '⚡URF  ' : '') + p.kills + '/' + p.deaths + '/' + p.assists + '   CS ' + p.cs;
   if (kda !== last.kda) { last.kda = kda; el.kda.textContent = kda; }
   if (!p.alive) {
     const ds = Math.ceil(p.respawnT);
@@ -8385,10 +8430,17 @@ function drawHud(dt) {
       hctx.fillStyle = '#f0e6d2';
       hctx.font = 'bold 11px sans-serif';
       hctx.fillText(u.level, sx - bw / 2 - 9, sy + bh / 2);
-      hctx.fillStyle = 'rgba(0,0,0,0.75)';
-      hctx.fillRect(sx - bw / 2 - 1, sy + bh + 1, bw + 2, 5);
-      hctx.fillStyle = !u.def.mana && u.mp >= 100 ? '#ffffff' : '#3b82f6';
-      hctx.fillRect(sx - bw / 2, sy + bh + 2, bw * Math.max(0, u.mp / u.maxMp), 3);
+      if (u.kind !== 'aatrox' || u.axRT > 0) {
+        hctx.fillStyle = 'rgba(0,0,0,0.75)';
+        hctx.fillRect(sx - bw / 2 - 1, sy + bh + 1, bw + 2, 5);
+        if (u.kind === 'aatrox') {
+          hctx.fillStyle = '#ff4a5a';
+          hctx.fillRect(sx - bw / 2, sy + bh + 2, bw * Math.min(1, u.axRT / 10), 3);
+        } else {
+          hctx.fillStyle = !u.def.mana && u.mp >= 100 ? '#ffffff' : '#3b82f6';
+          hctx.fillRect(sx - bw / 2, sy + bh + 2, bw * Math.max(0, u.mp / u.maxMp), 3);
+        }
+      }
     }
     if (u.temp && u.buildT > 0) {
       hctx.font = 'bold 12px sans-serif';
@@ -8617,6 +8669,7 @@ if (selSp[0] === selSp[1]) { selSp[0] = 'heal'; selSp[1] = 'flash'; }
 function saveSet() {
   save.set.diff = selDiff;
   save.set.red = sideRed;
+  save.set.urf = urf;
   save.set.sp[0] = selSp[0];
   save.set.sp[1] = selSp[1];
   save.set.sfx = sfxVol;
@@ -8671,6 +8724,8 @@ $('cicX').innerHTML = icn('P_AX');
 
 function startGame(kind) {
   AI = AIP[selDiff];
+  goldRate = urf ? 9 : 4.2;
+  xpMul = urf ? 1.6 : 1;
   save.set.champ = kind;
   saveSet();
   if (sideRed) {
@@ -8706,6 +8761,7 @@ function startGame(kind) {
   const allyChamp = createChampion(other, 0, -SPAWN_X, 2.6);
   enemyChamps.push(createChampion(pool[0], 1, SPAWN_X, -1.6));
   enemyChamps.push(createChampion(pool[1], 1, SPAWN_X, 1.6));
+  if (urf) for (let i = 0; i < champs.length; i++) champs[i].gold += 3000;
   if (AI.ignite) {
     for (let i = 0; i < enemyChamps.length; i++) if (enemyChamps[i].kind !== 'azir') enemyChamps[i].sp = ['ignite', 'flash'];
   }
@@ -8730,7 +8786,17 @@ function startGame(kind) {
   updateVision(0, true);
 }
 
-const sideEls = document.querySelectorAll('.side');
+const sideEls = document.querySelectorAll('.side[data-s]');
+const urfEl = $('urfBtn');
+urfEl.addEventListener('click', function () {
+  urf = !urf;
+  urfEl.classList.toggle('on', urf);
+  saveSet();
+});
+if (save.set.urf) {
+  urf = true;
+  urfEl.classList.add('on');
+}
 for (let i = 0; i < sideEls.length; i++) {
   sideEls[i].addEventListener('click', function () {
     sideRed = sideEls[i].getAttribute('data-s') === '1';
