@@ -6629,6 +6629,29 @@ function aiChampion(u, dt) {
     u.mz = u.z * 0.5;
     return;
   }
+  if (selDiff >= 2) {
+    let hc = null;
+    let hd2 = 196;
+    for (let i = 0; i < champs.length; i++) {
+      const c = champs[i];
+      if (c.team === u.team || !c.alive || !c.targetable || !hiddenFor(c, u.team)) continue;
+      const cx = c.x - u.x;
+      const cz = c.z - u.z;
+      const cd2 = cx * cx + cz * cz;
+      if (cd2 < hd2) { hd2 = cd2; hc = c; }
+    }
+    if (hc !== null) {
+      const hb = BUSHES[hc.bush];
+      const vis = findEnemy(u, 10);
+      if (towerAt(u.team, hb.x, hb.z, 1.0) === null && (vis === null || !vis.isChamp)) {
+        u.order = 1;
+        u.target = null;
+        u.mx = hb.x;
+        u.mz = hb.z;
+        return;
+      }
+    }
+  }
   let t = findEnemy(u, u.kind === 'azir' ? 11 : 10);
   if (t && !dive && !siege && towerAt(u.team, t.x, t.z, 0) !== null) {
     if (u.kind === 'azir' && (u.wCharges > 0 || soldierCount(u) > 0)) {
