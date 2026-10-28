@@ -1501,7 +1501,6 @@ function buildSoldier(team) {
   g.userData.legs = [lgL, lgR];
   const atkMatA = new THREE.MeshBasicMaterial({ color: team === 0 ? 0x2f8cff : 0xff3a2a, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
   const atkMatB = new THREE.MeshBasicMaterial({ color: team === 0 ? 0xbfe4ff : 0xffc2b0, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending });
-  part(body, gSph(0.8), atkMatA, 0, 0.9, 0);
   part(spear, gCyl(0.16, 0.16, 1.8, 8), atkMatA, 0, 0.35, 0);
   part(spear, gCyl(0.06, 0.06, 1.7, 6), atkMatB, 0, 0.35, 0);
   part(spear, gSph(0.34), atkMatB, 0, 1.15, 0);
