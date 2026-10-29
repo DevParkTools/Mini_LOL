@@ -2109,7 +2109,7 @@ const DEFS = {
     skills: [
       { n: '바람 베기', cd: 4, cost: 0, cds: [4, 4, 4, 4, 4], costs: [0, 0, 0, 0, 0], ic: '🗡️', r: 4.5 },
       { n: '바람 방벽', cd: 25, cost: 0, cds: [25, 23, 21, 19, 17], costs: [0, 0, 0, 0, 0], ic: '🌬️', r: 2.5 },
-      { n: '돌진 베기', cd: 0.5, cost: 0, cds: [0.5, 0.4, 0.3, 0.2, 0.1], costs: [0, 0, 0, 0, 0], ic: '💨', r: 4.75 },
+      { n: '돌진 베기', cd: 0.5, cost: 0, cds: [0.5, 0.5, 0.5, 0.5, 0.5], costs: [0, 0, 0, 0, 0], ic: '💨', r: 4.75 },
       { n: '낙하 일격', cd: 70, cost: 0, cds: [70, 50, 30], costs: [0, 0, 0], ic: '⚡', r: 14 }
     ]
   },
@@ -2303,6 +2303,15 @@ function initQHum() {
 }
 
 function qHumTick() {
+  if (ac && !muted) {
+    const na = ac.currentTime;
+    for (let i = 0; i < champs.length; i++) {
+      const c = champs[i];
+      if (c === player || c.kind !== 'yasuo' || !c.alive || c.qStacks < 2 || na < c.humAt) continue;
+      c.humAt = na + 0.5;
+      sfx(39, c.x, c.z);
+    }
+  }
   if (!qHumG) return;
   const on = !muted && player !== null && player.alive && player.kind === 'yasuo' && player.qStacks >= 2;
   if (on === qHumOn) return;
@@ -2370,22 +2379,22 @@ function sfx(id, x, z) {
   switch (id) {
     case 0: tone(520, 880, 0.12, 'sine', 0.22, 0); tone(1040, 700, 0.1, 'triangle', 0.12, 0); break;
     case 1: noise(0.14, 0.35, 'bandpass', 3000, 900, 0); tone(300, 150, 0.08, 'sawtooth', 0.1, 0); break;
-    case 2: noise(0.14, 0.28, 'highpass', 2500, 5000, 0); tone(180, 90, 0.1, 'square', 0.12, 0); break;
+    case 2: noise(0.07, 0.34, 'highpass', 5000, 9500, 0); tone(2400, 3600, 0.06, 'sawtooth', 0.1, 0); tone(1900, 950, 0.09, 'square', 0.07, 0.02); break;
     case 3: tone(110, 55, 0.35, 'sawtooth', 0.32, 0); noise(0.25, 0.3, 'lowpass', 1200, 200, 0); break;
     case 4: noise(0.15, 0.3, 'lowpass', 2000, 300, 0); tone(90, 50, 0.15, 'sine', 0.3, 0); break;
     case 5: tone(240, 120, 0.08, 'square', 0.12, 0); noise(0.06, 0.2, 'bandpass', 1800, 800, 0); break;
     case 6: tone(200, 140, 0.05, 'triangle', 0.07, 0); break;
     case 7: tone(300, 900, 0.3, 'sine', 0.2, 0); noise(0.25, 0.15, 'bandpass', 800, 2500, 0); break;
     case 8: tone(660, 990, 0.25, 'triangle', 0.2, 0); tone(990, 1320, 0.2, 'sine', 0.12, 0.06); break;
-    case 10: noise(0.3, 0.3, 'bandpass', 600, 2400, 0); tone(200, 500, 0.25, 'sawtooth', 0.1, 0); break;
-    case 11: tone(150, 300, 0.3, 'triangle', 0.25, 0); noise(0.3, 0.2, 'lowpass', 600, 1800, 0); tone(440, 660, 0.2, 'sine', 0.1, 0.1); break;
-    case 12: noise(0.25, 0.35, 'bandpass', 400, 3500, 0); tone(260, 700, 0.22, 'sawtooth', 0.12, 0); break;
-    case 13: tone(90, 60, 0.7, 'sawtooth', 0.3, 0); noise(0.6, 0.4, 'lowpass', 500, 2500, 0); tone(220, 330, 0.5, 'square', 0.1, 0.15); break;
-    case 14: noise(0.12, 0.3, 'bandpass', 3500, 1200, 0); tone(520, 260, 0.1, 'triangle', 0.12, 0); break;
-    case 15: tone(420, 200, 0.5, 'sine', 0.2, 0); noise(0.5, 0.2, 'bandpass', 1500, 500, 0); break;
-    case 16: noise(0.18, 0.35, 'bandpass', 2500, 800, 0); tone(700, 300, 0.15, 'sawtooth', 0.1, 0); break;
-    case 17: tone(120, 50, 0.5, 'sawtooth', 0.3, 0); noise(0.4, 0.35, 'bandpass', 2800, 500, 0); tone(880, 440, 0.3, 'triangle', 0.15, 0); break;
-    case 18: noise(0.45, 0.3, 'bandpass', 500, 1800, 0); tone(330, 550, 0.4, 'sine', 0.15, 0); break;
+    case 10: noise(0.28, 0.3, 'bandpass', 900, 3200, 0); tone(300, 700, 0.2, 'triangle', 0.12, 0); tone(1400, 2200, 0.07, 'sawtooth', 0.07, 0.1); break;
+    case 11: noise(0.3, 0.28, 'lowpass', 500, 1800, 0); tone(180, 330, 0.25, 'triangle', 0.16, 0); tone(660, 990, 0.12, 'square', 0.08, 0.15); break;
+    case 12: noise(0.22, 0.36, 'bandpass', 2000, 600, 0); tone(500, 1500, 0.2, 'sine', 0.16, 0); tone(1500, 700, 0.15, 'triangle', 0.09, 0.12); break;
+    case 13: tone(80, 50, 0.8, 'sawtooth', 0.28, 0); noise(0.7, 0.4, 'lowpass', 400, 1600, 0); tone(220, 440, 0.4, 'square', 0.1, 0.2); break;
+    case 14: noise(0.1, 0.36, 'highpass', 3500, 7500, 0); tone(900, 400, 0.08, 'sawtooth', 0.1, 0); break;
+    case 15: noise(0.45, 0.3, 'bandpass', 700, 2600, 0); tone(330, 500, 0.4, 'sine', 0.14, 0); tone(660, 880, 0.3, 'triangle', 0.07, 0.1); break;
+    case 16: noise(0.16, 0.4, 'bandpass', 3200, 1200, 0); tone(700, 1600, 0.1, 'sine', 0.12, 0); break;
+    case 17: noise(0.5, 0.4, 'bandpass', 2500, 500, 0); tone(1200, 200, 0.45, 'sawtooth', 0.12, 0); tone(110, 60, 0.4, 'sine', 0.3, 0.1); break;
+    case 18: noise(0.6, 0.35, 'bandpass', 400, 2400, 0); tone(180, 360, 0.5, 'sawtooth', 0.14, 0); tone(360, 720, 0.4, 'sine', 0.1, 0.15); break;
     case 20: tone(392, 392, 0.15, 'square', 0.14, 0); tone(523, 523, 0.15, 'square', 0.14, 0.12); tone(659, 659, 0.25, 'square', 0.14, 0.24); break;
     case 21: tone(300, 80, 0.7, 'sawtooth', 0.25, 0); break;
     case 22: noise(0.9, 0.5, 'lowpass', 2000, 100, 0); tone(80, 30, 0.9, 'sine', 0.5, 0); break;
@@ -2399,7 +2408,15 @@ function sfx(id, x, z) {
     case 30: tone(392, 196, 0.8, 'sawtooth', 0.25, 0); break;
     case 31: tone(440, 660, 0.1, 'triangle', 0.15, 0); break;
     case 32: tone(600, 400, 0.06, 'sine', 0.06, 0); break;
-    case 33: tone(90, 45, 0.5, 'sawtooth', 0.3, 0); noise(0.4, 0.3, 'bandpass', 700, 2600, 0); tone(330, 660, 0.35, 'square', 0.14, 0.05); tone(660, 990, 0.3, 'triangle', 0.14, 0.15); break;
+    case 33: tone(110, 220, 0.35, 'sawtooth', 0.28, 0); tone(220, 440, 0.3, 'square', 0.12, 0.08); tone(660, 1320, 0.25, 'triangle', 0.14, 0.15); noise(0.25, 0.25, 'bandpass', 900, 3000, 0.05); break;
+    case 34: noise(0.3, 0.35, 'lowpass', 1800, 300, 0); tone(150, 70, 0.3, 'sawtooth', 0.2, 0); break;
+    case 35: noise(0.12, 0.3, 'highpass', 3000, 6000, 0); tone(1100, 500, 0.08, 'square', 0.1, 0); tone(1100, 500, 0.08, 'square', 0.1, 0.1); noise(0.15, 0.25, 'bandpass', 2200, 900, 0.12); break;
+    case 36: noise(0.25, 0.4, 'bandpass', 500, 2500, 0); tone(90, 200, 0.25, 'sawtooth', 0.22, 0); break;
+    case 37: tone(90, 45, 0.8, 'sawtooth', 0.32, 0); tone(180, 90, 0.7, 'square', 0.14, 0.05); noise(0.7, 0.4, 'lowpass', 700, 2200, 0); tone(60, 40, 0.9, 'sine', 0.35, 0); break;
+    case 39: tone(500, 900, 0.18, 'sine', 0.14, 0); tone(1000, 1400, 0.12, 'triangle', 0.06, 0.05); break;
+    case 40: tone(200, 100, 0.15, 'square', 0.16, 0); noise(0.12, 0.3, 'bandpass', 1500, 500, 0); break;
+    case 41: tone(1200, 600, 0.1, 'triangle', 0.14, 0); noise(0.1, 0.25, 'highpass', 3000, 6000, 0); break;
+    case 42: noise(0.2, 0.45, 'lowpass', 2000, 200, 0); tone(100, 45, 0.25, 'sine', 0.4, 0); noise(0.1, 0.3, 'highpass', 3500, 7000, 0); break;
     default: break;
   }
 }
@@ -2473,7 +2490,7 @@ function newUnit(kind, team, x, z, mesh) {
     speedBoostT: 0, speedBoost: 0,
     level: 1, xp: 0, kills: 0, deaths: 0, assists: 0, cs: 0, respawnT: 0, respawnMax: 1, cid: 0, dmgTs: null, bush: -1, revealT: -99, temp: false, life: 0, twin: false, dmgT: -99, spawnZ: 0, ruin: null, unlocked: false, lastHitBy: null, lastHitT: 0, recDone: [], cdr: 0, apen: 0, gw: false, cutUntil: 0, sbT: 0, sbTarget: null, diving: false, aiZ: 0, aiZt: 0, ls: 0, buyLog: [], streak: 0, mkN: 0, mkT: -99, mkRep: 0, cheat: false, pCd: 0, sigil: null, sigilT: 0, hinted: false, occ: null, owner: null, ruinOf: null, buildT: 0,
     retreating: false, retreatEnd: 0, backing: false, backEnd: 0, pasT: 0, axQT: 0, axQN: 0, axQDx: 0, axQDz: 1, axRT: 0, axMsT: 0, axFxT: 0, axBig: false, fearT: 0, fearX: 0, fearZ: 0, shopT: 0, cd: [0, 0, 0, 0], sumCd: [0, 0, 0], sp: ['heal', 'flash'], exT: 0, ghT: 0, aiEqT: 0, aiEqX: 0, aiEqZ: 0, aiMode: 0, aiModeT: 0, igT: 0, igAcc: 0, igDmg: 0, igSrc: null, buffT: 0, aiT: Math.random() * 0.2, aiState: 0,
-    fxT: 0, nash: false, ie: false, comboR: false, dOut: 0, dOutC: 0, dIn: 0, bigQ: false, eMarkT: 0, eMarkD: 8, eMarkBy: null, eqLast: -99, comboT: null, comboEnd: 0, qStamp: 0, tStamp: 0, eStamp: 0, qStacks: 0, qStackT: 0,
+    fxT: 0, nash: false, ie: false, comboR: false, dOut: 0, dOutC: 0, dIn: 0, bigQ: false, humAt: 0, spQ: -1, spT: null, spUntil: 0, spLx: 0, spLz: 0, eMarkT: 0, eMarkD: 8, eMarkBy: null, eqLast: -99, comboT: null, comboEnd: 0, qStamp: 0, tStamp: 0, eStamp: 0, qStacks: 0, qStackT: 0,
     sl: [0, 0, 0, 0], skillPts: 0, gold: 0, aggroT: 0, aggroTarget: null, airH: 0, eGot: false, aggroSoft: false, aggroSol: false, hitTower: false, hitMinT: -99, hitMinTeam: -1, hitMinX: 0, hitMinZ: 0, retT: 0, mpRegen: 0, rT: 0, rFx: 0, rHitN: 0, rHit: [null, null, null, null, null, null, null, null], wCharges: 2, wRecharge: 0, eqQueued: false, eStk: 0, eStkT: 0, animT: 0, animKind: 0, animDur: 0.3, barW: 40, headY: 1.6, next: null, unlocks: null, req: 0, arcH: 0, forceTot: 1, items: null, buyIdx: 0, buyList: null,
     name: '', def: null
   };
@@ -2869,7 +2886,7 @@ function skMul(u, s) { return 1 + (s === 3 ? 0.4 : 0.25) * (rk(u, s) - 1); }
 function skCd(u, s) {
   const c = u.def.skills[s].cds[rk(u, s) - 1];
   if (u.kind === 'yasuo' && s === 0) { let red = (u.asMul - 1) / 1.67; if (red > 0.667) red = 0.667; const v = c * (1 - red) * (1 - u.cdr); const w = urf ? v * 0.25 : v; return w < 1.33 ? 1.33 : w; }
-  if (u.kind === 'yasuo' && s === 2) return c;
+  if (u.kind === 'yasuo' && s === 2) return c < 0.5 ? 0.5 : c;
   if (u.kind === 'aatrox' && s === 0 && u.qStacks > 0) return urf ? 0.3 : 0.7;
   const v = c * (1 - u.cdr);
   return urf ? Math.max(0.3, v * 0.2) : v;
@@ -2994,7 +3011,7 @@ function passiveTipHtml(p) {
   }
   if (p.kind === 'azir') {
     const ad = Math.round(230 + (p.level - 1) * 10 + p.ap * 0.4);
-    return '<div class="tn">태양 포탑 <span class="tl">[패시브]</span></div><div>파괴된 포탑의 잔해에 슈리마의 표식이 생깁니다(파괴 1초 후). 600 거리 이내에서 표식을 우클릭하면 태양 포탑을 세웁니다. 적 기지의 억제기·쌍둥이 포탑 잔해에는 설치할 수 없습니다.</div><div>지속시간 = 체력: 45초에 걸쳐 서서히 감소하며 피해를 받으면 더 빨리 사라집니다. 아군 포탑 잔해에도 설치할 수 있습니다.</div><div>체력 <span class="tv">3000</span> · 공격력 <span class="tv">' + ad + '</span> (+주문력 40%) · 마법 피해 · 방어력/마법 저항력 <span class="tv">' + Math.round(Math.min(90, 30 + (p.level - 1) * 60 / 17)) + '</span> (아지르가 주변에 없으면 0) · 파괴 시 50골드</div><div>설치 시간 1초 · 첫 공격까지 5초 · 사거리 750</div><div>재사용 대기시간: <span class="tv">' + SIGIL_CD + '초</span>' + (p.pCd > 0 ? ' · 남은 시간 <span class="tv">' + Math.ceil(p.pCd) + '초</span>' : ' · <span class="tv">준비 완료</span>') + '</div>';
+    return '<div class="tn">태양 포탑 <span class="tl">[패시브]</span></div><div>파괴된 포탑의 잔해에 슈리마의 표식이 생깁니다(파괴 1초 후). 600 거리 이내에서 표식을 우클릭하면 태양 포탑을 세웁니다. 적 기지의 억제기·쌍둥이 포탑 잔해에는 설치할 수 없습니다.</div><div>지속시간 = 체력: 45초에 걸쳐 서서히 감소하며 피해를 받으면 더 빨리 사라집니다. 아군 포탑 잔해에도 설치할 수 있습니다.</div><div>체력 <span class="tv">3000</span> · 공격력 <span class="tv">' + ad + '</span> (+주문력 40%) · 마법 피해 · 방어력/마법 저항력 <span class="tv">' + Math.round(Math.min(90, 30 + (p.level - 1) * 60 / 17)) + '</span> (아지르가 주변에 없으면 0) · 파괴 시 50골드</div><div>설치 시간 1초 · 첫 공격까지 5초 · 사거리 750</div><div>재사용 대기시간: <span class="tv">' + SIGIL_CD + '초</span> (쌍둥이 포탑 잔해에 설치 시 ' + SIGIL_CD_TWIN + '초)' + (p.pCd > 0 ? ' · 남은 시간 <span class="tv">' + Math.ceil(p.pCd) + '초</span>' : ' · <span class="tv">준비 완료</span>') + '</div>';
   }
   return '<div class="tn">도전자의 길 <span class="tl">[패시브]</span></div><div>치명타 확률이 <span class="tv">2배</span>가 되지만, 치명타 피해량이 <span class="tv">10% 감소</span>합니다. 100%를 넘는 치명타 확률은 초과 1%당 공격력 0.5로 바뀝니다.</div><div>이동하면 바람이 차오르고, 바람이 100%일 때 피해를 받으면 <span class="tv">' + (125 + 28 * (p.level - 1)) + '</span>의 보호막을 얻습니다. (현재 바람 <span class="tv">' + Math.floor(p.mp) + '%</span>)</div>';
 }
@@ -3884,7 +3901,8 @@ function makeRuin(d) {
 
 const SIGIL_R = 6;
 const SIGIL_PICK = 2.6;
-const SIGIL_CD = 45;
+const SIGIL_CD = 180;
+const SIGIL_CD_TWIN = 300;
 let sigT = 0;
 
 function canSigil(az, d) {
@@ -3937,7 +3955,7 @@ function updateSigils(dt) {
 }
 
 function placeSolar(az, d) {
-  az.pCd = SIGIL_CD;
+  az.pCd = d.twin ? SIGIL_CD_TWIN : SIGIL_CD;
   az.lockT = Math.max(az.lockT, 1);
   az.order = 0;
   az.target = null;
@@ -4618,7 +4636,7 @@ function updateProjs(dt) {
       if (p.block && projWallBlocked(p, opx, opz)) {
         discFx(p.x, p.h, p.z, 0.3, 1.2, 0x59b0ff, 0.25);
         ringFx(p.x, p.z, 0.3, 1.8, 0x59b0ff, 0.3);
-        sfx(8, p.x, p.z);
+        sfx(41, p.x, p.z);
         endProj(p);
         continue;
       }
@@ -5449,9 +5467,9 @@ function axTake(c) {
   c.axRT = Math.min(10, c.axRT + 5);
   c.axMsT = 10;
   sfx(33, c.x, c.z);
-  ringFx(c.x, c.z, 0.5, 3.2, 0xff4a4a, 0.5);
-  ringFx(c.x, c.z, 0.3, 4.4, 0xffb0a0, 0.7);
-  discFx(c.x, 1.2, c.z, 0.5, 2.4, 0xff7a6a, 0.35);
+  ringFx(c.x, c.z, 0.5, 3.2, tcA(0xff4a4a, c.team), 0.5);
+  ringFx(c.x, c.z, 0.3, 4.4, tcA(0xffb0a0, c.team), 0.7);
+  discFx(c.x, 1.2, c.z, 0.5, 2.4, tcA(0xff7a6a, c.team), 0.35);
 }
 
 function axQResolve(u) {
@@ -5493,48 +5511,49 @@ function axQResolve(u) {
     skillHit(u, e, tip ? 2 : 1);
     if (tip) {
       knockUp(e, 0.25);
-      discFx(e.x, 1.0, e.z, 0.3, 1.8, 0xffffff, 0.2);
-      ringFx(e.x, e.z, 0.3, 2.2, 0xffd0c0, 0.3);
-      sparkBurst(e.x, 0.8, e.z, 12, 6, 6, 0xffd0c0, 0.5);
+      discFx(e.x, 1.0, e.z, 0.3, 1.8, tcA(0xffffff, u.team), 0.2);
+      ringFx(e.x, e.z, 0.3, 2.2, tcA(0xffd0c0, u.team), 0.3);
+      sparkBurst(e.x, 0.8, e.z, 12, 6, 6, tcA(0xffd0c0, u.team), 0.5);
       if (u === player) addShake(0.15, 0.12);
-    } else if (e.isChamp) sparkBurst(e.x, 0.9, e.z, 6, 4, 3, 0xff6a5a, 0.4);
+    } else if (e.isChamp) sparkBurst(e.x, 0.9, e.z, 6, 4, 3, tcA(0xff6a5a, u.team), 0.4);
     if (e.isChamp) { champHit = true; if (tip) tipHit = true; }
   }
   if (champHit) u.pasT -= tipHit ? 4 : 2;
   const yaw = Math.atan2(dx, dz);
   if (st === 0) {
-    rectFx(u.x + dx * 3.25, u.z + dz * 3.25, yaw, 1.6, 6.5, 0.6, 6.5, 0xff3a3a, 0.3, 0, 0);
-    rectFx(u.x + dx * 5.6, u.z + dz * 5.6, yaw, 1.7, 1.8, 0.6, 1.8, 0xffd0c0, 0.3, 0, 0);
+    rectFx(u.x + dx * 3.25, u.z + dz * 3.25, yaw, 1.6, 6.5, 0.6, 6.5, tcA(0xff3a3a, u.team), 0.3, 0, 0);
+    rectFx(u.x + dx * 5.6, u.z + dz * 5.6, yaw, 1.7, 1.8, 0.6, 1.8, tcA(0xffd0c0, u.team), 0.3, 0, 0);
   } else if (st === 1) {
-    rectFx(u.x + dx * 2.7, u.z + dz * 2.7, yaw, 3.6, 5.2, 1.0, 5.2, 0xff3a3a, 0.3, 0, 0);
-    rectFx(u.x + dx * 4.3, u.z + dz * 4.3, yaw, 4.2, 1.8, 1.2, 1.8, 0xffd0c0, 0.3, 0, 0);
+    rectFx(u.x + dx * 2.7, u.z + dz * 2.7, yaw, 3.6, 5.2, 1.0, 5.2, tcA(0xff3a3a, u.team), 0.3, 0, 0);
+    rectFx(u.x + dx * 4.3, u.z + dz * 4.3, yaw, 4.2, 1.8, 1.2, 1.8, tcA(0xffd0c0, u.team), 0.3, 0, 0);
   } else {
-    ringFx(cxx, czz, 1.0, 3.6, 0xff3a3a, 0.4);
-    discFx(cxx, 0.8, czz, 3.0, 3.4, 0xff4a4a, 0.3);
-    discFx(cxx, 0.9, czz, 1.5, 1.8, 0xffd0c0, 0.3);
+    ringFx(cxx, czz, 1.0, 3.6, tcA(0xff3a3a, u.team), 0.4);
+    discFx(cxx, 0.8, czz, 3.0, 3.4, tcA(0xff4a4a, u.team), 0.3);
+    discFx(cxx, 0.9, czz, 1.5, 1.8, tcA(0xffd0c0, u.team), 0.3);
     addShake(0.3, 0.2);
   }
   if (st === 0) {
-    rectFx(u.x + dx * 3.25, u.z + dz * 3.25, yaw, 0.7, 6.5, 0.4, 6.5, 0x3a0606, 0.9, 0, 0);
-    arcFx(u.x + dx * 4.4, 0.6, u.z + dz * 4.4, yaw, 1.5, 1.3, 2.0, 1.8, 0xff5a4a, 0.3, dx * 6, dz * 6);
-    arcFx(u.x + dx * 4.4, 0.7, u.z + dz * 4.4, yaw, 1.2, 1.0, 1.7, 1.5, 0xffe0d8, 0.24, dx * 6, dz * 6);
-    sparkDir(u.x + dx * 5.4, 0.7, u.z + dz * 5.4, dx, dz, 16, 9, 3, 3, 0xff6a5a, 0.5);
+    rectFx(u.x + dx * 3.25, u.z + dz * 3.25, yaw, 0.7, 6.5, 0.4, 6.5, tcA(0x3a0606, u.team), 0.9, 0, 0);
+    arcFx(u.x + dx * 4.4, 0.6, u.z + dz * 4.4, yaw, 1.5, 1.3, 2.0, 1.8, tcA(0xff5a4a, u.team), 0.3, dx * 6, dz * 6);
+    arcFx(u.x + dx * 4.4, 0.7, u.z + dz * 4.4, yaw, 1.2, 1.0, 1.7, 1.5, tcA(0xffe0d8, u.team), 0.24, dx * 6, dz * 6);
+    sparkDir(u.x + dx * 5.4, 0.7, u.z + dz * 5.4, dx, dz, 16, 9, 3, 3, tcA(0xff6a5a, u.team), 0.5);
   } else if (st === 1) {
-    rectFx(u.x + dx * 2.7, u.z + dz * 2.7, yaw, 2.4, 5.2, 1.6, 5.2, 0x3a0606, 0.9, 0, 0);
-    arcFx(u.x + dx * 0.8, 0.6, u.z + dz * 0.8, yaw, 2.8, 4.8, 4.4, 5.8, 0xff5a4a, 0.32, dx * 4, dz * 4);
-    arcFx(u.x + dx * 1.0, 0.7, u.z + dz * 1.0, yaw, 2.4, 4.2, 3.9, 5.2, 0xffe0d8, 0.26, dx * 4, dz * 4);
-    sparkDir(u.x + dx * 4.0, 0.7, u.z + dz * 4.0, dx, dz, 18, 9, 5, 3, 0xff6a5a, 0.55);
+    rectFx(u.x + dx * 2.7, u.z + dz * 2.7, yaw, 2.4, 5.2, 1.6, 5.2, tcA(0x3a0606, u.team), 0.9, 0, 0);
+    arcFx(u.x + dx * 0.8, 0.6, u.z + dz * 0.8, yaw, 2.8, 4.8, 4.4, 5.8, tcA(0xff5a4a, u.team), 0.32, dx * 4, dz * 4);
+    arcFx(u.x + dx * 1.0, 0.7, u.z + dz * 1.0, yaw, 2.4, 4.2, 3.9, 5.2, tcA(0xffe0d8, u.team), 0.26, dx * 4, dz * 4);
+    sparkDir(u.x + dx * 4.0, 0.7, u.z + dz * 4.0, dx, dz, 18, 9, 5, 3, tcA(0xff6a5a, u.team), 0.55);
   } else {
-    discFx(cxx, 0.1, czz, 2.6, 3.0, 0x3a0606, 0.55);
-    sparkBurst(cxx, 0.3, czz, 24, 8, 5, 0xff6a5a, 0.7);
-    for (let i = 0; i < 8; i++) rectFx(cxx + FX8C[i] * 1.5, czz + FX8S[i] * 1.5, Math.atan2(FX8C[i], FX8S[i]), 0.25, 1.6, 0.05, 3.2, 0x7a1010, 0.5, FX8C[i] * 2, FX8S[i] * 2);
-    ringFx(cxx, czz, 0.6, 4.4, 0xffd0c0, 0.35);
+    discFx(cxx, 0.1, czz, 2.6, 3.0, tcA(0x3a0606, u.team), 0.55);
+    sparkBurst(cxx, 0.3, czz, 24, 8, 5, tcA(0xff6a5a, u.team), 0.7);
+    for (let i = 0; i < 8; i++) rectFx(cxx + FX8C[i] * 1.5, czz + FX8S[i] * 1.5, Math.atan2(FX8C[i], FX8S[i]), 0.25, 1.6, 0.05, 3.2, tcA(0x7a1010, u.team), 0.5, FX8C[i] * 2, FX8S[i] * 2);
+    ringFx(cxx, czz, 0.6, 4.4, tcA(0xffd0c0, u.team), 0.35);
   }
-  sfx(18, u.x, u.z);
+  sfx(42, u.x, u.z);
 }
 
 function axChainHit(p, e) {
   const src = p.src;
+  sfx(40, e.x, e.z);
   const r = rk(src, 1) - 1;
   let dmg = AX_W[r] + src.ad * 0.4;
   if (!e.isChamp) dmg *= 2;
@@ -5542,9 +5561,9 @@ function axChainHit(p, e) {
   e.slowT = Math.max(e.slowT, 1.5);
   e.slowAmt = Math.max(e.slowAmt, AX_WS[r]);
   skillHit(src, e, 1);
-  sparkBurst(e.x, 1.0, e.z, 10, 5, 3, 0xff3040, 0.5);
-  arcFx(e.x, 1.0, e.z, Math.random() * 6.28, 1.3, 0.9, 1.9, 1.3, 0xff5060, 0.25, 0, 0);
-  ringFx(e.x, e.z, 0.4, 2.0, 0xff3a3a, 0.35);
+  sparkBurst(e.x, 1.0, e.z, 10, 5, 3, tcA(0xff3040, src.team), 0.5);
+  arcFx(e.x, 1.0, e.z, Math.random() * 6.28, 1.3, 0.9, 1.9, 1.3, tcA(0xff5060, src.team), 0.25, 0, 0);
+  ringFx(e.x, e.z, 0.4, 2.0, tcA(0xff3a3a, src.team), 0.35);
   if (!e.isChamp || !e.alive) return;
   src.pasT -= 2;
   let c = null;
@@ -5561,7 +5580,7 @@ function axChainHit(p, e) {
   c.dx = p.dx;
   c.dz = p.dz;
   c.dmg = dmg;
-  rectFx(e.x + p.dx * 1.2, e.z + p.dz * 1.2, Math.atan2(p.dx, p.dz), 2.0, 4.2, 3.4, 4.2, 0xff3040, 1.5, 0, 0);
+  rectFx(e.x + p.dx * 1.2, e.z + p.dz * 1.2, Math.atan2(p.dx, p.dz), 2.0, 4.2, 3.4, 4.2, tcA(0xff3040, src.team), 1.5, 0, 0);
 }
 
 function updateAxChains(dt) {
@@ -5581,12 +5600,12 @@ function updateAxChains(dt) {
         const lz = e.z - sz;
         const ll = Math.sqrt(lx * lx + lz * lz);
         if (ll > 0.3) {
-          rectFx((sx + e.x) * 0.5, (sz + e.z) * 0.5, Math.atan2(lx, lz), 0.14, ll, 0.1, ll, 0xff4a5a, 0.13, 0, 0);
-          sparkFx(e.x, 1.0, e.z, (Math.random() - 0.5) * 2, 1 + Math.random(), (Math.random() - 0.5) * 2, 0xff3040, 0.3, 1, 4);
+          rectFx((sx + e.x) * 0.5, (sz + e.z) * 0.5, Math.atan2(lx, lz), 0.14, ll, 0.1, ll, tcA(0xff4a5a, c.src.team), 0.13, 0, 0);
+          sparkFx(e.x, 1.0, e.z, (Math.random() - 0.5) * 2, 1 + Math.random(), (Math.random() - 0.5) * 2, tcA(0xff3040, c.src.team), 0.3, 1, 4);
         }
       }
       c.fxR -= dt;
-      if (c.fxR <= 0) { c.fxR = 0.3; ringFx(c.cx, c.cz, 1.9, 0.3, 0xff3a3a, 0.3); }
+      if (c.fxR <= 0) { c.fxR = 0.3; ringFx(c.cx, c.cz, 1.9, 0.3, tcA(0xff3a3a, c.src.team), 0.3); }
       continue;
     }
     c.on = false;
@@ -5603,10 +5622,10 @@ function updateAxChains(dt) {
       pushUnit(e, (tx - e.x) / 0.25, (tz - e.z) / 0.25, 0.25);
     }
     c.src.pasT -= 2;
-    ringFx(c.cx, c.cz, 0.4, 2.4, 0xff3a3a, 0.4);
-    sparkBurst(c.cx, 0.8, c.cz, 14, 6, 4, 0xff3040, 0.5);
-    discFx(c.cx, 1.0, c.cz, 0.3, 1.8, 0xffd0d8, 0.2);
-    sparkDir(e.x, 0.8, e.z, c.dx, c.dz, 10, 7, 1.5, 1.5, 0xff6a5a, 0.4);
+    ringFx(c.cx, c.cz, 0.4, 2.4, tcA(0xff3a3a, c.src.team), 0.4);
+    sparkBurst(c.cx, 0.8, c.cz, 14, 6, 4, tcA(0xff3040, c.src.team), 0.5);
+    discFx(c.cx, 1.0, c.cz, 0.3, 1.8, tcA(0xffd0d8, c.src.team), 0.2);
+    sparkDir(e.x, 0.8, e.z, c.dx, c.dz, 10, 7, 1.5, 1.5, tcA(0xff6a5a, c.src.team), 0.4);
     if (c.src === player) addShake(0.12, 0.12);
   }
 }
@@ -5628,9 +5647,9 @@ function updateAatrox(u, dt) {
     u.axFxT -= dt;
     if (u.axFxT <= 0) {
       u.axFxT = 0.2;
-      discFx(u.x + (Math.random() - 0.5) * 1.2, 0.4 + Math.random() * 1.8, u.z + (Math.random() - 0.5) * 1.2, 0.3, 0.08, 0xff3a3a, 0.5);
-      ringFx(u.x, u.z, 0.6, 1.8, 0xff3030, 0.35);
-      sparkFx(u.x + (Math.random() - 0.5) * 1.4, 0.3, u.z + (Math.random() - 0.5) * 1.4, (Math.random() - 0.5) * 0.8, 3 + Math.random() * 2, (Math.random() - 0.5) * 0.8, 0xff4a3a, 0.9, 1, 3);
+      discFx(u.x + (Math.random() - 0.5) * 1.2, 0.4 + Math.random() * 1.8, u.z + (Math.random() - 0.5) * 1.2, 0.3, 0.08, tcA(0xff3a3a, u.team), 0.5);
+      ringFx(u.x, u.z, 0.6, 1.8, tcA(0xff3030, u.team), 0.35);
+      sparkFx(u.x + (Math.random() - 0.5) * 1.4, 0.3, u.z + (Math.random() - 0.5) * 1.4, (Math.random() - 0.5) * 0.8, 3 + Math.random() * 2, (Math.random() - 0.5) * 0.8, tcA(0xff4a3a, u.team), 0.9, 1, 3);
     }
     if (u.axRT <= 0) { u.axRT = 0; u.axMsT = 0; recalc(u); }
   }
@@ -5648,10 +5667,10 @@ function axPassive(u, t) {
   if (u.axRT > 0) h *= 1 + AX_R_HEAL[rk(u, 3) - 1];
   healUnit(u, h);
   u.pasT = axPasMax(u);
-  ringFx(t.x, t.z, 0.4, 1.8, 0xff3a5a, 0.3);
-  discFx(t.x, 1.0, t.z, 0.3, 1.4, 0xffd0d8, 0.2);
-  sparkBurst(t.x, 1.0, t.z, 12, 5, 3, 0xff3a5a, 0.5);
-  arcFx(t.x, 1.0, t.z, u.yaw + 3.1416, 1.6, 1.1, 2.3, 1.6, 0xff5a6a, 0.25, 0, 0);
+  ringFx(t.x, t.z, 0.4, 1.8, tcA(0xff3a5a, u.team), 0.3);
+  discFx(t.x, 1.0, t.z, 0.3, 1.4, tcA(0xffd0d8, u.team), 0.2);
+  sparkBurst(t.x, 1.0, t.z, 12, 5, 3, tcA(0xff3a5a, u.team), 0.5);
+  arcFx(t.x, 1.0, t.z, u.yaw + 3.1416, 1.6, 1.1, 2.3, 1.6, tcA(0xff5a6a, u.team), 0.25, 0, 0);
 }
 
 function castAatrox(u, slot, tx, tz) {
@@ -5671,16 +5690,16 @@ function castAatrox(u, slot, tx, tz) {
     u.axQT = 0.5;
     u.lockT = Math.max(u.lockT, 0.5);
     const yaw = u.yaw;
-    sparkBurst(u.x + nx * 0.8, 1.3, u.z + nz * 0.8, 10, 2.5, 4, 0xff5a3a, 0.6);
+    sparkBurst(u.x + nx * 0.8, 1.3, u.z + nz * 0.8, 10, 2.5, 4, tcA(0xff5a3a, u.team), 0.6);
     if (st === 0) {
-      rectFx(u.x + nx * 3.25, u.z + nz * 3.25, yaw, 1.6, 6.5, 1.6, 6.5, 0xff5050, 0.5, 0, 0);
-      rectFx(u.x + nx * 5.6, u.z + nz * 5.6, yaw, 1.7, 1.8, 1.7, 1.8, 0xffc0b0, 0.5, 0, 0);
+      rectFx(u.x + nx * 3.25, u.z + nz * 3.25, yaw, 1.6, 6.5, 1.6, 6.5, tcA(0xff5050, u.team), 0.5, 0, 0);
+      rectFx(u.x + nx * 5.6, u.z + nz * 5.6, yaw, 1.7, 1.8, 1.7, 1.8, tcA(0xffc0b0, u.team), 0.5, 0, 0);
     } else if (st === 1) {
-      rectFx(u.x + nx * 2.7, u.z + nz * 2.7, yaw, 3.6, 5.2, 3.6, 5.2, 0xff5050, 0.5, 0, 0);
-      rectFx(u.x + nx * 4.3, u.z + nz * 4.3, yaw, 4.2, 1.8, 4.2, 1.8, 0xffc0b0, 0.5, 0, 0);
+      rectFx(u.x + nx * 2.7, u.z + nz * 2.7, yaw, 3.6, 5.2, 3.6, 5.2, tcA(0xff5050, u.team), 0.5, 0, 0);
+      rectFx(u.x + nx * 4.3, u.z + nz * 4.3, yaw, 4.2, 1.8, 4.2, 1.8, tcA(0xffc0b0, u.team), 0.5, 0, 0);
     } else {
-      ringFx(u.x + nx * 1.8, u.z + nz * 1.8, 3.0, 3.0, 0xff5050, 0.5);
-      discFx(u.x + nx * 1.8, 0.8, u.z + nz * 1.8, 1.5, 1.5, 0xffc0b0, 0.5);
+      ringFx(u.x + nx * 1.8, u.z + nz * 1.8, 3.0, 3.0, tcA(0xff5050, u.team), 0.5);
+      discFx(u.x + nx * 1.8, 0.8, u.z + nz * 1.8, 1.5, 1.5, tcA(0xffc0b0, u.team), 0.5);
     }
     if (st < 2) { u.qStacks = st + 1; u.qStackT = 3; } else { u.qStacks = 0; u.qStackT = 0; }
     return true;
@@ -5688,8 +5707,8 @@ function castAatrox(u, slot, tx, tz) {
   if (slot === 1) {
     u.yaw = Math.atan2(nx, nz);
     u.windT = 0;
-    spawnProj(u, 3, u.x + nx * 0.8, u.z + nz * 0.8, nx, nz, 20, 8.25, 0.55, 0, 0, 0xff3040, null, true, 1.0);
-    rectFx(u.x + nx * 4.1, u.z + nz * 4.1, u.yaw, 0.5, 8.25, 0.1, 8.25, 0xff6060, 0.25, 0, 0);
+    spawnProj(u, 3, u.x + nx * 0.8, u.z + nz * 0.8, nx, nz, 20, 8.25, 0.55, 0, 0, tcA(0xff3040, u.team), null, true, 1.0);
+    rectFx(u.x + nx * 4.1, u.z + nz * 4.1, u.yaw, 0.5, 8.25, 0.1, 8.25, tcA(0xff6060, u.team), 0.25, 0, 0);
     return true;
   }
   if (slot === 2) {
@@ -5702,10 +5721,10 @@ function castAatrox(u, slot, tx, tz) {
     u.windT = 0;
     u.atkCd = 0;
     u.yaw = Math.atan2(nx, nz);
-    rectFx(u.x + nx * len * 0.5, u.z + nz * len * 0.5, u.yaw, 0.8, len, 0.2, len, 0xff6a5a, 0.3, 0, 0);
-    ringFx(u.x, u.z, 0.4, 1.8, 0xff6a5a, 0.3);
-    sparkDir(u.x, 0.4, u.z, -nx, -nz, 12, 6, 3, 2, 0xffa090, 0.45);
-    arcFx(u.x + nx * 1.2, 0.8, u.z + nz * 1.2, u.yaw, 1.4, 0.9, 1.9, 1.3, 0xff6a5a, 0.22, nx * 8, nz * 8);
+    rectFx(u.x + nx * len * 0.5, u.z + nz * len * 0.5, u.yaw, 0.8, len, 0.2, len, tcA(0xff6a5a, u.team), 0.3, 0, 0);
+    ringFx(u.x, u.z, 0.4, 1.8, tcA(0xff6a5a, u.team), 0.3);
+    sparkDir(u.x, 0.4, u.z, -nx, -nz, 12, 6, 3, 2, tcA(0xffa090, u.team), 0.45);
+    arcFx(u.x + nx * 1.2, 0.8, u.z + nz * 1.2, u.yaw, 1.4, 0.9, 1.9, 1.3, tcA(0xff6a5a, u.team), 0.22, nx * 8, nz * 8);
     return true;
   }
   u.axRT = 10;
@@ -5722,11 +5741,11 @@ function castAatrox(u, slot, tx, tz) {
     e.fearZ = u.z;
     e.windT = 0;
   }
-  sparkBurst(u.x, 0.5, u.z, 34, 10, 8, 0xff3030, 1.0);
-  for (let q = 0; q < 5; q++) discFx(u.x, 0.4 + q * 0.7, u.z, 0.8, 3.0 - q * 0.4, 0xff3030, 0.5);
-  ringFx(u.x, u.z, 0.6, 6, 0xff2a2a, 0.7);
-  ringFx(u.x, u.z, 0.4, 3.5, 0xffb0a0, 0.5);
-  discFx(u.x, 1.2, u.z, 0.6, 4.2, 0xff3030, 0.5);
+  sparkBurst(u.x, 0.5, u.z, 34, 10, 8, tcA(0xff3030, u.team), 1.0);
+  for (let q = 0; q < 5; q++) discFx(u.x, 0.4 + q * 0.7, u.z, 0.8, 3.0 - q * 0.4, tcA(0xff3030, u.team), 0.5);
+  ringFx(u.x, u.z, 0.6, 6, tcA(0xff2a2a, u.team), 0.7);
+  ringFx(u.x, u.z, 0.4, 3.5, tcA(0xffb0a0, u.team), 0.5);
+  discFx(u.x, 1.2, u.z, 0.6, 4.2, tcA(0xff3030, u.team), 0.5);
   addShake(0.5, 0.4);
   return true;
 }
@@ -5844,10 +5863,10 @@ function cast(u, slot, tx, tz) {
   if (!ok) return false;
   if (u.kind === 'yasuo' && slot === 0 && !eq) u.lockT = Math.max(u.lockT, u.bigQ ? 0.3 : 0.22);
   startCastAnim(u, slot, eq);
-  if (slot < 3) ringFx(u.x, u.z, 0.3, 1.9, u.kind === 'azir' ? 0xffc83a : (u.kind === 'aatrox' ? 0xff5a5a : 0x59b9ff), 0.25);
+  if (slot < 3) ringFx(u.x, u.z, 0.3, 1.9, u.kind === 'azir' ? 0xffc83a : (u.kind === 'aatrox' ? tcA(0xff5a5a, u.team) : 0x59b9ff), 0.25);
   if (u === player) addShake(slot === 3 ? 0.3 : 0.07, 0.15);
   u.recallT = 0;
-  sfx((u.kind === 'azir' ? 10 : 14) + slot, u.x, u.z);
+  sfx(u.kind === 'azir' ? 10 + slot : (u.kind === 'aatrox' ? 34 + slot : 14 + slot), u.x, u.z);
   u.cd[slot] = skCd(u, slot);
   if (u.def.mana) u.mp -= cost;
   return true;
@@ -5877,7 +5896,29 @@ function useSummoner(u, idx, tx, tz) {
   const ty = idx < 2 ? u.sp[idx] : 'snow';
   if (ty === 'exhaust' || ty === 'ignite') {
     const tg = spellTarget(u, tx, tz);
-    if (tg === null) { spFail = '사거리 내 적 챔피언이 없습니다'; return false; }
+    if (tg === null) {
+      let far = null;
+      let fd = 6.25;
+      for (let i = 0; i < champs.length; i++) {
+        const c = champs[i];
+        if (c.team === u.team || !c.alive || !c.targetable || (c.team === 1 && !c.mesh.visible)) continue;
+        const mx = c.x - tx;
+        const mz = c.z - tz;
+        const d2 = mx * mx + mz * mz;
+        if (d2 < fd) { fd = d2; far = c; }
+      }
+      if (u !== player || far === null) { spFail = '사거리 내 적 챔피언이 없습니다'; return false; }
+      u.spQ = idx;
+      u.spT = far;
+      u.spUntil = gameTime + 6;
+      u.order = 1;
+      u.target = null;
+      u.mx = far.x;
+      u.mz = far.z;
+      u.spLx = far.x;
+      u.spLz = far.z;
+      return true;
+    }
     if (ty === 'exhaust') {
       tg.exT = gameTime + 3;
       tg.slowT = Math.max(tg.slowT, 3);
@@ -6259,6 +6300,25 @@ function startRecall(u) {
 
 function updateChampTimers(u, dt) {
   if (u.pCd > 0) u.pCd -= dt;
+  if (u.spQ >= 0) {
+    const st = u.spT;
+    if (!u.alive || !st.alive || gameTime > u.spUntil || u.sumCd[u.spQ] > 0 || u.order !== 1 || u.mx !== u.spLx || u.mz !== u.spLz) u.spQ = -1;
+    else {
+      const sdx = st.x - u.x;
+      const sdz = st.z - u.z;
+      if (sdx * sdx + sdz * sdz <= 33) {
+        const sq = u.spQ;
+        u.spQ = -1;
+        u.order = 0;
+        useSummoner(u, sq, st.x, st.z);
+      } else {
+        u.mx = st.x;
+        u.mz = st.z;
+        u.spLx = st.x;
+        u.spLz = st.z;
+      }
+    }
+  }
   if (u.kind === 'aatrox') updateAatrox(u, dt);
   if (u.recallT > 0) {
     if (u.order !== 0 || u.lockT > 0 || u.windT > 0 || u.dashT > 0 || u.stunT > 0 || u.airT > 0 || u.forceT > 0) {
@@ -6607,6 +6667,7 @@ function towerAt(team, x, z, pad) {
 }
 
 function aiDodgeR(u) {
+  if (selDiff < 2) return false;
   const w = rWalls[1 - u.team];
   if (!w.on) { u.drSeen = false; return false; }
   if (w.state !== 0) return false;
@@ -6816,7 +6877,12 @@ function aiSkills(u, t, hr) {
   const dx = t.x - u.x;
   const dz = t.z - u.z;
   const d = Math.sqrt(dx * dx + dz * dz);
-  if (AI.ignite && t.isChamp && u.sp[0] === 'ignite' && u.sumCd[0] <= 0 && d < 6 && t.hp < t.maxHp * AI.finish) useSummoner(u, 0, t.x, t.z);
+  if (AI.finish > 0 && t.isChamp && u.sumCd[0] <= 0) {
+    const sd = u.sp[0];
+    if (sd === 'ignite' && d < 6 && t.hp < t.maxHp * AI.finish) useSummoner(u, 0, t.x, t.z);
+    else if (sd === 'exhaust' && d < 5.5 && hr < 0.6) useSummoner(u, 0, t.x, t.z);
+    else if (sd === 'ghost' && d > 5 && d < 10 && t.hp < t.maxHp * 0.5) useSummoner(u, 0, u.x, u.z);
+  }
   if (u.kind === 'aatrox') {
     if (u.axQT > 0) {
       if (u.cd[2] <= 0 && d > 3.4 && d < 8) cast(u, 2, t.x, t.z);
@@ -7120,7 +7186,7 @@ function aiChampion(u, dt) {
     const far = ft.range + ft.radius + 4;
     if (hr > 0.3 && fdx * fdx + fdz * fdz <= far * far && (siege || !anyMin)) { u.order = 2; u.target = ft; return; }
     let gx = ft.x - dir * (ft.range + ft.radius + 2.5);
-    if (anyMin && gx * dir > fm + 1.5) gx = dir * (fm + 1.5);
+    if (anyMin && gx * dir > fm + 4.5) gx = dir * (fm + 4.5);
     u.mx = gx;
   } else u.mx = dir * (46 + MAP_EXT - 4);
   u.order = 1;
@@ -8629,7 +8695,7 @@ function updateHud(dt) {
     last.sp = p.skillPts;
     skpEl.style.display = 'none';
   }
-  if (isAzir) setCd(7, p.pCd, SIGIL_CD, false, 0);
+  if (isAzir) setCd(7, p.pCd, p.pCd > SIGIL_CD ? SIGIL_CD_TWIN : SIGIL_CD, false, 0);
   else if (p.kind === 'aatrox') setCd(7, p.pasT, axPasMax(p), false, 0);
   else setCd(7, 0, 1, p.mp < 100, 0);
   const pr = isAzir ? (p.pCd <= 0 ? 1 : 0) : (p.mp >= 100 ? 1 : 0);
@@ -9242,7 +9308,8 @@ function pickTeams(kind) {
     pool[i] = pool[j];
     pool[j] = tmp;
   }
-  return { other: other, pool: pool };
+  const dp = ['heal', 'exhaust', 'ignite', 'ghost'];
+  return { other: other, pool: pool, sp0: [dp[(Math.random() * 4) | 0], 'flash'], sp1: [dp[(Math.random() * 4) | 0], 'flash'] };
 }
 
 function ldCard(k, t, sub, sp, red) {
@@ -9258,8 +9325,8 @@ function beginLoad(kind) {
   const foeT = 1 - myT;
   const e0 = loadPick.pool[0];
   const e1 = loadPick.pool[1];
-  const sp0 = AI.ignite && e0 !== 'azir' ? ['ignite', 'flash'] : ['heal', 'flash'];
-  const sp1 = AI.ignite && e1 !== 'azir' ? ['ignite', 'flash'] : ['heal', 'flash'];
+  const sp0 = loadPick.sp0;
+  const sp1 = loadPick.sp1;
   $('ldTop').innerHTML = ldCard(kind, myT, '나', selSp, myT === 1) + ldCard(loadPick.other, myT, '아군 AI', ['heal', 'flash'], myT === 1);
   $('ldBot').innerHTML = ldCard(e0, foeT, '상대 AI', sp0, foeT === 1) + ldCard(e1, foeT, '상대 AI', sp1, foeT === 1);
   const ldE = $('load');
@@ -9323,9 +9390,8 @@ function startGame(kind) {
   enemyChamps.push(createChampion(pool[0], 1, SPAWN_X, -1.6));
   enemyChamps.push(createChampion(pool[1], 1, SPAWN_X, 1.6));
   if (urf) for (let i = 0; i < champs.length; i++) champs[i].gold += 3000;
-  if (AI.ignite) {
-    for (let i = 0; i < enemyChamps.length; i++) if (enemyChamps[i].kind !== 'azir') enemyChamps[i].sp = ['ignite', 'flash'];
-  }
+  enemyChamps[0].sp = [loadPick.sp0[0], loadPick.sp0[1]];
+  enemyChamps[1].sp = [loadPick.sp1[0], loadPick.sp1[1]];
   enemyChamp = enemyChamps[0];
   buildStructures();
   initHud();
@@ -9373,7 +9439,6 @@ if (save.set.red) {
 for (let i = 0; i < chmEls.length; i++) {
   const k = chmEls[i].getAttribute('data-k');
   chmEls[i].addEventListener('click', function () { if (!started && !loading) csSelect(k); });
-  chmEls[i].addEventListener('dblclick', function () { if (!started && !loading) { csSelect(k); beginLoad(k); } });
 }
 lockEl.addEventListener('click', function () { beginLoad(selKind); });
 csSp();
