@@ -1352,13 +1352,24 @@ function buildYasuo(team) {
   return g;
 }
 
+const hsT = { h: 0, s: 0, l: 0 };
+function hueRot(c, k) {
+  tmpCol.setHex(c);
+  tmpCol.getHSL(hsT);
+  tmpCol.setHSL((hsT.h + k) % 1, hsT.s, hsT.l);
+  return tmpCol.getHex();
+}
+function teamIsRed(team) { return ((TEAM_HEX[team] >> 16) & 255) > (TEAM_HEX[team] & 255); }
+function tcA(c, team) { return teamIsRed(team) ? c : hueRot(c, 0.6); }
+function tcZ(c, team) { return teamIsRed(team) ? hueRot(c, 0.42) : c; }
+
 function buildAatrox(team) {
   const g = new THREE.Group();
   const body = new THREE.Group();
   g.add(body);
-  const armor = matP(0x5a1a22, 0x2a0408, 14);
-  const armorD = matP(0x2e0e14, 0x120204, 30);
-  const iron = matP(0x3a3036, 0x1a0408, 50);
+  const armor = matP(tcA(0x5a1a22, team), tcA(0x2a0408, team), 14);
+  const armorD = matP(tcA(0x2e0e14, team), tcA(0x120204, team), 30);
+  const iron = matP(tcA(0x3a3036, team), tcA(0x1a0408, team), 50);
   const skin = mat(0x7a5a56);
   const lgL = new THREE.Group();
   lgL.position.set(-0.22, 0.6, 0);
@@ -1376,14 +1387,14 @@ function buildAatrox(team) {
   body.add(lgR);
   part(body, gLathe('axT', [0.001, 0, 0.4, 0.02, 0.46, 0.2, 0.38, 0.5, 0.5, 0.78, 0.4, 0.98, 0.001, 1.02]), armorD, 0, 0.6, 0);
   part(body, gSph(0.42), armor, 0, 1.3, 0.02).scale.set(1.4, 0.95, 0.9);
-  part(body, gBox(0.05, 0.42, 0.04), glow(0xff3030, 0.9), -0.14, 1.3, 0.38).rotation.z = 0.3;
-  part(body, gBox(0.05, 0.42, 0.04), glow(0xff3030, 0.9), 0.14, 1.3, 0.38).rotation.z = -0.3;
-  part(body, gSph(0.07), glow(0xff4a3a, 0.95), 0, 1.26, 0.4);
+  part(body, gBox(0.05, 0.42, 0.04), glow(tcA(0xff3030, team), 0.9), -0.14, 1.3, 0.38).rotation.z = 0.3;
+  part(body, gBox(0.05, 0.42, 0.04), glow(tcA(0xff3030, team), 0.9), 0.14, 1.3, 0.38).rotation.z = -0.3;
+  part(body, gSph(0.07), glow(tcA(0xff4a3a, team), 0.95), 0, 1.26, 0.4);
   part(body, gCyl(0.42, 0.44, 0.14, 12), iron, 0, 0.72, 0);
-  part(body, gOct(0.1), glow(0xff3030, 0.9), 0, 0.72, 0.44);
-  cloth(body, 0.32, 0.8, 0.5, 0x2a0a10, -0.24, 0.72, 0.34, -0.15, 0.1, 0);
-  cloth(body, 0.32, 0.9, 0.5, 0x2a0a10, 0.24, 0.72, 0.34, -0.15, -0.1, 0);
-  cloth(body, 0.7, 1.0, 0.4, 0x2a0a10, 0, 0.8, -0.34, 0.1, 0, 0);
+  part(body, gOct(0.1), glow(tcA(0xff3030, team), 0.9), 0, 0.72, 0.44);
+  cloth(body, 0.32, 0.8, 0.5, tcA(0x2a0a10, team), -0.24, 0.72, 0.34, -0.15, 0.1, 0);
+  cloth(body, 0.32, 0.9, 0.5, tcA(0x2a0a10, team), 0.24, 0.72, 0.34, -0.15, -0.1, 0);
+  cloth(body, 0.7, 1.0, 0.4, tcA(0x2a0a10, team), 0, 0.8, -0.34, 0.1, 0, 0);
   const pR = part(body, gSph(0.32), armor, 0.74, 1.58, 0);
   pR.scale.set(1.1, 0.75, 1.0);
   part(body, gCone(0.09, 0.5, 5), iron, 0.9, 1.88, 0).rotation.z = -0.5;
@@ -1397,9 +1408,9 @@ function buildAatrox(team) {
   part(body, gSph(0.27), skin, 0, 1.92, 0.03);
   part(body, gSph(0.21), skin, 0, 1.82, 0.1).scale.set(1, 0.7, 1);
   part(body, gBox(0.38, 0.06, 0.1), mat(0x1a0c0c), 0, 1.99, 0.22).rotation.x = 0.2;
-  part(body, gBox(0.11, 0.045, 0.03), glow(0xff3030, 1), -0.1, 1.94, 0.27).rotation.z = 0.25;
-  part(body, gBox(0.11, 0.045, 0.03), glow(0xff3030, 1), 0.1, 1.94, 0.27).rotation.z = -0.25;
-  part(body, gBox(0.03, 0.2, 0.02), glow(0xff3030, 0.7), -0.16, 1.82, 0.25).rotation.z = 0.15;
+  part(body, gBox(0.11, 0.045, 0.03), glow(tcA(0xff3030, team), 1), -0.1, 1.94, 0.27).rotation.z = 0.25;
+  part(body, gBox(0.11, 0.045, 0.03), glow(tcA(0xff3030, team), 1), 0.1, 1.94, 0.27).rotation.z = -0.25;
+  part(body, gBox(0.03, 0.2, 0.02), glow(tcA(0xff3030, team), 0.7), -0.16, 1.82, 0.25).rotation.z = 0.15;
   part(body, gSph(0.3), mat(0x1c1214), 0, 2.0, -0.08).scale.set(1, 0.8, 1);
   for (let i = 0; i < 5; i++) {
     const hs = part(body, gCone(0.08, 0.5 + (i % 2) * 0.12, 5), mat(0x1c1214), (i - 2) * 0.12, 2.12, -0.16);
@@ -1413,13 +1424,13 @@ function buildAatrox(team) {
   for (let i = 0; i < 4; i++) {
     const fL = new THREE.Group();
     fL.rotation.set(-1.0, 0, 0.35 + i * 0.3);
-    part(fL, gCone(0.1, wl[i], 4), matP(0x24080e, 0x3a0408, 30), 0, wl[i] / 2, 0).scale.z = 0.2;
-    part(fL, gBox(0.02, wl[i] * 0.85, 0.02), glow(0xff3030, 0.55), 0, wl[i] / 2, 0.03);
+    part(fL, gCone(0.1, wl[i], 4), matP(tcA(0x24080e, team), tcA(0x3a0408, team), 30), 0, wl[i] / 2, 0).scale.z = 0.2;
+    part(fL, gBox(0.02, wl[i] * 0.85, 0.02), glow(tcA(0xff3030, team), 0.55), 0, wl[i] / 2, 0.03);
     wingsL.add(fL);
     const fR = new THREE.Group();
     fR.rotation.set(-1.0, 0, -0.35 - i * 0.3);
-    part(fR, gCone(0.1, wl[i], 4), matP(0x24080e, 0x3a0408, 30), 0, wl[i] / 2, 0).scale.z = 0.2;
-    part(fR, gBox(0.02, wl[i] * 0.85, 0.02), glow(0xff3030, 0.55), 0, wl[i] / 2, 0.03);
+    part(fR, gCone(0.1, wl[i], 4), matP(tcA(0x24080e, team), tcA(0x3a0408, team), 30), 0, wl[i] / 2, 0).scale.z = 0.2;
+    part(fR, gBox(0.02, wl[i] * 0.85, 0.02), glow(tcA(0xff3030, team), 0.55), 0, wl[i] / 2, 0.03);
     wingsR.add(fR);
   }
   body.add(wingsL);
@@ -1437,7 +1448,7 @@ function buildAatrox(team) {
   body.add(armR);
   poseArm(armR, 1.42, 0, 0.95, 0.1);
   const sword = new THREE.Group();
-  const bm = matP(0x3c424e, 0x1c0408, 40);
+  const bm = matP(tcA(0x3c424e, team), tcA(0x1c0408, team), 40);
   part(sword, gBox(0.3, 0.06, 0.9), bm, 0, 0, 0.8);
   part(sword, gBox(0.36, 0.06, 0.7), bm, 0, 0, 1.55);
   part(sword, gBox(0.27, 0.06, 0.6), bm, 0, 0, 2.15);
@@ -1449,12 +1460,12 @@ function buildAatrox(team) {
     nc.rotation.set(0, 0, -Math.PI / 2 + 0.25);
     nc.scale.z = 0.3;
   }
-  part(sword, gBox(0.05, 0.075, 2.5), glow(0xff3a3a, 0.7), 0, 0, 1.6);
-  part(sword, gBox(0.7, 0.1, 0.14), matP(0x5a1a22, 0x2a0408, 60), 0, 0, 0.28);
-  part(sword, gCone(0.08, 0.3, 5), matP(0x5a1a22, 0x2a0408, 60), 0.4, 0, 0.36).rotation.z = -Math.PI / 2;
-  part(sword, gCone(0.08, 0.3, 5), matP(0x5a1a22, 0x2a0408, 60), -0.4, 0, 0.36).rotation.z = Math.PI / 2;
-  part(sword, gCyl(0.045, 0.045, 0.55, 8), mat(0x1a0a0c), 0, 0, -0.02).rotation.x = Math.PI / 2;
-  part(sword, gSph(0.08), matP(0x5a1a22, 0x2a0408, 60), 0, 0, -0.32);
+  part(sword, gBox(0.05, 0.075, 2.5), glow(tcA(0xff3a3a, team), 0.7), 0, 0, 1.6);
+  part(sword, gBox(0.7, 0.1, 0.14), matP(tcA(0x5a1a22, team), tcA(0x2a0408, team), 60), 0, 0, 0.28);
+  part(sword, gCone(0.08, 0.3, 5), matP(tcA(0x5a1a22, team), tcA(0x2a0408, team), 60), 0.4, 0, 0.36).rotation.z = -Math.PI / 2;
+  part(sword, gCone(0.08, 0.3, 5), matP(tcA(0x5a1a22, team), tcA(0x2a0408, team), 60), -0.4, 0, 0.36).rotation.z = Math.PI / 2;
+  part(sword, gCyl(0.045, 0.045, 0.55, 8), mat(tcA(0x1a0a0c, team)), 0, 0, -0.02).rotation.x = Math.PI / 2;
+  part(sword, gSph(0.08), matP(tcA(0x5a1a22, team), tcA(0x2a0408, team), 60), 0, 0, -0.32);
   sword.scale.setScalar(0.85);
   sword.position.set(0.78, 0.95, 0.1);
   body.add(sword);
@@ -1478,7 +1489,7 @@ function buildAzir(team) {
   const gold = matP(0xd6a636, 0x3a2a05, 70);
   const goldB = matP(0xe8c24a, 0x3a2a05, 80);
   const skin = mat(0xa57850);
-  const gem = matP(0x6be6ff, 0x2aa6c0, 90);
+  const gem = matP(tcZ(0x6be6ff, team), tcZ(0x2aa6c0, team), 90);
   const cl = mat(teamShade(team, 0.55));
   const clC = teamShade(team, 0.5);
   const clD = teamShade(team, 0.32);
@@ -1508,7 +1519,7 @@ function buildAzir(team) {
   part(body, gSph(0.3), skin, 0, 1.2, 0).scale.set(1.3, 0.95, 0.8);
   part(body, gCyl(0.2, 0.42, 0.14, 16), gold, 0, 1.4, 0);
   part(body, gTor(0.4, 0.04), goldB, 0, 1.34, 0).rotation.x = Math.PI / 2;
-  part(body, gTor(0.32, 0.03), glow(0x6be6ff, 0.7), 0, 1.4, 0).rotation.x = Math.PI / 2;
+  part(body, gTor(0.32, 0.03), glow(tcZ(0x6be6ff, team), 0.7), 0, 1.4, 0).rotation.x = Math.PI / 2;
   for (let i = 0; i < 7; i++) {
     const a = (i - 3) * 0.34;
     part(body, gSph(0.035), gem, Math.sin(a) * 0.34, 1.32, Math.cos(a) * 0.34);
@@ -1522,15 +1533,15 @@ function buildAzir(team) {
   part(body, gBox(0.06, 0.035, 0.02), mat(0x1a0f08), -0.09, 1.65, 0.22);
   part(body, gBox(0.06, 0.035, 0.02), mat(0x1a0f08), 0.09, 1.65, 0.22);
   part(body, gSph(0.275), gold, 0, 1.74, -0.03).scale.set(1, 0.82, 1);
-  part(body, gBox(0.16, 0.7, 0.14), matP(0x2f6fc2, 0x0a1a3a, 60), -0.27, 1.42, 0.04);
-  part(body, gBox(0.16, 0.7, 0.14), matP(0x2f6fc2, 0x0a1a3a, 60), 0.27, 1.42, 0.04);
+  part(body, gBox(0.16, 0.7, 0.14), matP(tcZ(0x2f6fc2, team), tcZ(0x0a1a3a, team), 60), -0.27, 1.42, 0.04);
+  part(body, gBox(0.16, 0.7, 0.14), matP(tcZ(0x2f6fc2, team), tcZ(0x0a1a3a, team), 60), 0.27, 1.42, 0.04);
   part(body, gBox(0.05, 0.7, 0.15), gold, -0.27, 1.42, 0.04);
   part(body, gBox(0.05, 0.7, 0.15), gold, 0.27, 1.42, 0.04);
-  part(body, gBox(0.24, 0.62, 0.1), matP(0x2f6fc2, 0x0a1a3a, 60), 0, 1.45, -0.26);
+  part(body, gBox(0.24, 0.62, 0.1), matP(tcZ(0x2f6fc2, team), tcZ(0x0a1a3a, team), 60), 0, 1.45, -0.26);
   part(body, gCone(0.1, 0.5, 5), gold, 0, 2.0, 0.12).rotation.x = 0.7;
   part(body, gCone(0.07, 0.3, 5), gold, 0, 2.08, -0.04).rotation.x = -0.2;
   part(body, gSph(0.065), gem, 0, 1.86, 0.26);
-  part(body, gSph(0.1), glow(0x6be6ff, 0.35), 0, 1.86, 0.26);
+  part(body, gSph(0.1), glow(tcZ(0x6be6ff, team), 0.35), 0, 1.86, 0.26);
   const wl = part(body, gCone(0.14, 0.7, 4), gold, -0.38, 1.9, -0.04);
   wl.rotation.z = 1.15;
   wl.scale.z = 0.3;
@@ -1573,7 +1584,7 @@ function buildAzir(team) {
   part(staff, gCyl(0.04, 0.04, 2.1, 8), matP(0x8a6b2a, 0, 50), 0, 0.05, 0);
   part(staff, gTor(0.12, 0.03), gold, 0, 1.0, 0).rotation.x = Math.PI / 2;
   part(staff, gSph(0.13), gem, 0, 1.15, 0);
-  part(staff, gSph(0.22), glow(0x6be6ff, 0.25), 0, 1.15, 0);
+  part(staff, gSph(0.22), glow(tcZ(0x6be6ff, team), 0.25), 0, 1.15, 0);
   part(staff, gCone(0.07, 0.3, 5), gold, 0, 1.42, 0);
   part(staff, gCone(0.07, 0.24, 5), gold, 0, 0.9, 0).rotation.x = Math.PI;
   part(staff, gTor(0.17, 0.02), glow(0xffe08a, 0.8), 0, 1.15, 0).rotation.x = 1.1;
