@@ -5940,7 +5940,7 @@ function useSummoner(u, idx, tx, tz) {
       sparkBurst(tg.x, 1.2, tg.z, 18, 3, 4.5, 0xff8a2a, 0.8);
     }
     sfx(25, u.x, u.z);
-    u.sumCd[idx] = SPELLS[ty].cd;
+    u.sumCd[idx] = spCd(SPELLS[ty].cd);
     return true;
   }
   if (ty === 'ghost') {
@@ -5953,7 +5953,7 @@ function useSummoner(u, idx, tx, tz) {
     discFx(u.x, 1.0, u.z, 0.4, 1.8, 0x7cc9ff, 0.35);
     sparkBurst(u.x, 1.0, u.z, 16, 2.6, 3, 0xbfe9ff, 0.8);
     sfx(25, u.x, u.z);
-    u.sumCd[idx] = SPELLS.ghost.cd;
+    u.sumCd[idx] = spCd(SPELLS.ghost.cd);
     return true;
   }
   if (ty === 'heal') {
@@ -5978,7 +5978,7 @@ function useSummoner(u, idx, tx, tz) {
     ringFx(u.x, u.z, 0.9, 1.4, 0xeafff0, 0.6);
     discFx(u.x, 0.8, u.z, 0.4, 1.6, 0x6cf08a, 0.4);
     sparkBurst(u.x, 0.6, u.z, 16, 1.6, 4.5, 0x8cffaa, 1.0);
-    u.sumCd[idx] = SPELLS.heal.cd;
+    u.sumCd[idx] = spCd(SPELLS.heal.cd);
     return true;
   }
   let dx = tx - u.x;
@@ -6000,7 +6000,7 @@ function useSummoner(u, idx, tx, tz) {
         u.eqQueued = false;
         u.windT = 0;
         u.sbTarget = null;
-        u.sumCd[2] = 21;
+        u.sumCd[2] = spCd(21);
         ringFx(u.x, u.z, 0.5, 2.2, 0x7cc9ff, 0.4);
         sfx(26, u.x, u.z);
         return true;
@@ -6012,7 +6012,7 @@ function useSummoner(u, idx, tx, tz) {
     spawnProj(u, 2, u.x + dx / d, u.z + dz / d, dx / d, dz / d, 16, 11, 0.5, 10 + u.level * 5, 1, 0xdff6ff, null, false, 1.0);
     u.sbT = 0;
     u.sbTarget = null;
-    u.sumCd[2] = 28;
+    u.sumCd[2] = spCd(28);
     sfx(26, u.x, u.z);
     return true;
   }
@@ -6036,7 +6036,7 @@ function useSummoner(u, idx, tx, tz) {
   ringFx(u.x, u.z, 0.8, 1.2, 0x7fd0ff, 0.4);
   sparkBurst(u.x, 1.0, u.z, 14, 3, 2.5, 0x9fe0ff, 0.5);
   if (eqFlash) { u.eqLast = gameTime; yasuoCircle(u); }
-  u.sumCd[idx] = SPELLS.flash.cd;
+  u.sumCd[idx] = spCd(SPELLS.flash.cd);
   return true;
 }
 
@@ -6369,7 +6369,7 @@ function updateChampTimers(u, dt) {
   if (u.sumCd[0] > 0) u.sumCd[0] -= dt;
   if (u.sumCd[1] > 0) u.sumCd[1] -= dt;
   if (u.sumCd[2] > 0) u.sumCd[2] -= dt;
-  if (u.sbTarget !== null && u.sbT <= gameTime) { u.sbTarget = null; u.sumCd[2] = 28; }
+  if (u.sbTarget !== null && u.sbT <= gameTime) { u.sbTarget = null; u.sumCd[2] = spCd(28); }
   if (u.buffT > 0) u.buffT -= dt;
   if (u.igT > 0) {
     u.igT -= dt;
@@ -6666,6 +6666,10 @@ function towerAt(team, x, z, pad) {
   return null;
 }
 
+function spCd(v) {
+  return urf ? Math.max(2, v * 0.2) : v;
+}
+
 function aiDodgeR(u) {
   if (selDiff < 2) return false;
   const w = rWalls[1 - u.team];
@@ -6890,7 +6894,7 @@ function aiSkills(u, t, hr) {
     }
     const st = u.qStacks;
     if (st === 0 && t.isChamp && u.cd[1] <= 0 && d > 3.5 && d < 7.8 && cast(u, 1, t.x, t.z)) return;
-    if (u.cd[0] <= 0) {
+    if (u.cd[0] <= 0 && !t.isStruct) {
       const lim = st === 0 ? 6.0 : (st === 1 ? 4.6 : 3.6);
       if (d < lim && cast(u, 0, t.x, t.z)) return;
     }
@@ -7170,14 +7174,11 @@ function aiChampion(u, dt) {
     if (st.team === u.team || !st.alive || st.kind !== 'tower' || st.temp || !st.targetable) continue;
     if (ft === null || st.x * dir < ft.x * dir) ft = st;
   }
-  let fm = -1e9;
   let anyMin = false;
   for (let i = 0; i < units.length; i++) {
     const m = units[i];
     if (m.team !== u.team || !m.alive || m.isChamp || m.isStruct) continue;
     anyMin = true;
-    const mv = m.x * dir;
-    if (mv > fm) fm = mv;
   }
   if (!(u.aiZt > gameTime)) { u.aiZ = (Math.random() - 0.5) * 3; u.aiZt = gameTime + 3; }
   if (ft !== null) {
@@ -7186,7 +7187,6 @@ function aiChampion(u, dt) {
     const far = ft.range + ft.radius + 4;
     if (hr > 0.3 && fdx * fdx + fdz * fdz <= far * far && (siege || !anyMin)) { u.order = 2; u.target = ft; return; }
     let gx = ft.x - dir * (ft.range + ft.radius + 2.5);
-    if (anyMin && gx * dir > fm + 4.5) gx = dir * (fm + 4.5);
     u.mx = gx;
   } else u.mx = dir * (46 + MAP_EXT - 4);
   u.order = 1;
