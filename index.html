@@ -6080,6 +6080,9 @@ function engage(u, t, dt) {
 
 function atkDmg(u) { return (u.crit > 0 && Math.random() < u.crit) ? u.ad * ((u.kind === 'yasuo' ? 1.575 : 1.75) + (u.ie ? 0.35 : 0)) : u.ad; }
 
+const solAccE = new Array(64).fill(null);
+const solAccM = new Float32Array(64);
+
 function deliverAttack(u) {
   const t = u.windTarget;
   u.windTarget = null;
@@ -6092,9 +6095,13 @@ function deliverAttack(u) {
   if (u.kind === 'azir') {
     let first = true;
     let any = false;
+    let accN = 0;
+    let fxN = 0;
+    const base = AZ_W[rk(u, 1) - 1] + u.ap * azC(1, rk(u, 1));
+    const sslk = (t.forceT > 0 || t.airT > 0 || t.dashT > 0) ? 1.8 : 0.45;
     for (let i = 0; i < soldiers.length; i++) {
       const s = soldiers[i];
-      if (!s.on || s.owner !== u || s.state !== 0 || !soldierCanHit(u, s, t, 0.45)) continue;
+      if (!s.on || s.owner !== u || s.state !== 0 || !soldierCanHit(u, s, t, sslk)) continue;
       any = true;
       atkSol = true;
       atkOx = s.x;
@@ -6108,14 +6115,18 @@ function deliverAttack(u) {
       const len = dl > SOL_R + 0.4 ? dl + 0.2 : SOL_R + 0.4;
       collectLine(u.team, s.x, s.z, lx, lz, len, 0.5);
       sfx(2, s.x, s.z);
-      const base = AZ_W[rk(u, 1) - 1] + u.ap * azC(1, rk(u, 1));
       for (let k = 0; k < hitN; k++) {
         const e = hitBuf[k];
         const m = e === t ? (first ? 1 : 0.25) : pierceMul(u.level);
-        damage(u, e, base * m, 1);
+        let ai = 0;
+        while (ai < accN && solAccE[ai] !== e) ai++;
+        if (ai === accN) { solAccE[accN] = e; solAccM[accN] = 0; accN++; }
+        solAccM[ai] += m;
       }
       atkSol = false;
       first = false;
+      if (fxN >= 2) { s.faceYaw = Math.atan2(lx, lz); s.faced = true; if (s.atkT <= 0) { s.atkT = 0.25; s.atkDur = 0.25; } continue; }
+      fxN++;
       const sy = Math.atan2(lx, lz);
       const fa = s.team === player.team ? 0 : 1;
       const tipX = s.x + lx * 2.0;
@@ -6131,6 +6142,10 @@ function deliverAttack(u) {
       s.faceYaw = Math.atan2(lx, lz);
       s.faced = true;
       if (s.atkT <= 0) { s.atkT = 0.25; s.atkDur = 0.25; }
+    }
+    for (let k = 0; k < accN; k++) {
+      damage(u, solAccE[k], base * solAccM[k], 1);
+      solAccE[k] = null;
     }
     if (any) {
       if (u.nash) damage(u, t, (15 + u.ap * 0.2) * 0.5, 1);
