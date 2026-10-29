@@ -6670,6 +6670,19 @@ function spCd(v) {
   return urf ? Math.max(2, v * 0.2) : v;
 }
 
+function minionsAt(team, t) {
+  const r = t.range + t.radius + 1.5;
+  const r2 = r * r;
+  for (let i = 0; i < units.length; i++) {
+    const m = units[i];
+    if (m.team !== team || !m.alive || m.isChamp || m.isStruct) continue;
+    const dx = m.x - t.x;
+    const dz = m.z - t.z;
+    if (dx * dx + dz * dz <= r2) return true;
+  }
+  return false;
+}
+
 function aiDodgeR(u) {
   if (selDiff < 2) return false;
   const w = rWalls[1 - u.team];
@@ -7140,7 +7153,18 @@ function aiChampion(u, dt) {
       const d2 = sx * sx + sz * sz;
       if (d2 < bd2) { bd2 = d2; bs = st; }
     }
-    if (bs) { u.order = 2; u.target = bs; return; }
+    if (bs) {
+      if (bs.kind === 'tower' && !bs.temp && !u.diving && !minionsAt(u.team, bs)) {
+        u.order = 1;
+        u.target = null;
+        u.mx = bs.x - dir * (bs.range + bs.radius + 2.5);
+        u.mz = u.z * 0.5;
+        return;
+      }
+      u.order = 2;
+      u.target = bs;
+      return;
+    }
   }
   let champFar = true;
   for (let i = 0; i < champs.length; i++) {
@@ -7174,18 +7198,12 @@ function aiChampion(u, dt) {
     if (st.team === u.team || !st.alive || st.kind !== 'tower' || !st.targetable) continue;
     if (ft === null || st.x * dir < ft.x * dir) ft = st;
   }
-  let anyMin = false;
-  for (let i = 0; i < units.length; i++) {
-    const m = units[i];
-    if (m.team !== u.team || !m.alive || m.isChamp || m.isStruct) continue;
-    anyMin = true;
-  }
   if (!(u.aiZt > gameTime)) { u.aiZ = (Math.random() - 0.5) * 3; u.aiZt = gameTime + 3; }
   if (ft !== null) {
     const fdx = ft.x - u.x;
     const fdz = ft.z - u.z;
     const far = ft.range + ft.radius + 4;
-    if (hr > 0.3 && fdx * fdx + fdz * fdz <= far * far && (siege || !anyMin || ft.temp)) { u.order = 2; u.target = ft; return; }
+    if (hr > 0.3 && fdx * fdx + fdz * fdz <= far * far && (siege || ft.temp || minionsAt(u.team, ft))) { u.order = 2; u.target = ft; return; }
     let gx = ft.x - dir * (ft.range + ft.radius + 2.5);
     u.mx = gx;
   } else u.mx = dir * (46 + MAP_EXT - 4);
