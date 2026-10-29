@@ -6647,7 +6647,7 @@ function compact() {
 function towerAt(team, x, z, pad) {
   for (let i = 0; i < units.length; i++) {
     const t = units[i];
-    if (t.kind !== 'tower' || t.team === team || !t.alive) continue;
+    if (t.kind !== 'tower' || t.temp || t.team === team || !t.alive) continue;
     const dx = t.x - x;
     const dz = t.z - z;
     const r = t.range + t.radius + pad;
@@ -7064,7 +7064,7 @@ function aiChampion(u, dt) {
   if (!dive) {
     for (let i = 0; i < units.length; i++) {
       const ct = units[i];
-      if (ct.kind !== 'tower' || ct.team === u.team || !ct.alive || (ct.target !== u && ct.aggroTarget !== u)) continue;
+      if (ct.kind !== 'tower' || ct.temp || ct.team === u.team || !ct.alive || (ct.target !== u && ct.aggroTarget !== u)) continue;
       u.order = 1;
       u.mx = ct.x - dir * (ct.range + ct.radius + 2.5);
       u.mz = u.z * 0.5;
@@ -7171,7 +7171,7 @@ function aiChampion(u, dt) {
   let ft = null;
   for (let i = 0; i < structList.length; i++) {
     const st = structList[i];
-    if (st.team === u.team || !st.alive || st.kind !== 'tower' || st.temp || !st.targetable) continue;
+    if (st.team === u.team || !st.alive || st.kind !== 'tower' || !st.targetable) continue;
     if (ft === null || st.x * dir < ft.x * dir) ft = st;
   }
   let anyMin = false;
@@ -7185,7 +7185,7 @@ function aiChampion(u, dt) {
     const fdx = ft.x - u.x;
     const fdz = ft.z - u.z;
     const far = ft.range + ft.radius + 4;
-    if (hr > 0.3 && fdx * fdx + fdz * fdz <= far * far && (siege || !anyMin)) { u.order = 2; u.target = ft; return; }
+    if (hr > 0.3 && fdx * fdx + fdz * fdz <= far * far && (siege || !anyMin || ft.temp)) { u.order = 2; u.target = ft; return; }
     let gx = ft.x - dir * (ft.range + ft.radius + 2.5);
     u.mx = gx;
   } else u.mx = dir * (46 + MAP_EXT - 4);
